@@ -7,7 +7,7 @@ prisma/*.db
 prisma/*.db-*
 prisma/*.bak
 prisma/*.backup
-storage/
+/storage/
 tsconfig.tsbuildinfo
 npm-debug.log*
 .DS_Store
