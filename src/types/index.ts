@@ -1,0 +1,88 @@
+export enum UserRole {
+  TEACHER = 'TEACHER',
+  ACADEMIC = 'ACADEMIC',
+  STUDENT = 'STUDENT',
+  PUPIL = 'PUPIL',
+  PARENT = 'PARENT',
+  INSTITUTION = 'INSTITUTION',
+  ASSISTANT = 'ASSISTANT',
+  ADMIN = 'ADMIN',
+}
+
+export enum ProfessionalTitle {
+  PROFESSOR = 'PROFESSOR',
+  DOCTOR = 'DOCTOR',
+  ENGINEER = 'ENGINEER',
+  INSPECTOR = 'INSPECTOR',
+}
+
+export enum StudentType {
+  PUPIL_PRIMARY = 'PUPIL_PRIMARY',
+  PUPIL_MIDDLE = 'PUPIL_MIDDLE',
+  PUPIL_SECONDARY = 'PUPIL_SECONDARY',
+  UNIVERSITY = 'UNIVERSITY',
+}
+
+export enum PaymentProofStatus {
+  PENDING = 'PENDING',
+  UNDER_REVIEW = 'UNDER_REVIEW',
+  APPROVED = 'APPROVED',
+  REJECTED = 'REJECTED',
+}
+
+export enum TeachingMode {
+  IN_PERSON = 'IN_PERSON',
+  ONLINE = 'ONLINE',
+  BOTH = 'BOTH',
+}
+
+export enum SubscriptionState {
+  FREE_ACTIVE = 'FREE_ACTIVE',
+  PRO_ACTIVE = 'PRO_ACTIVE',
+  PRO_EXPIRED = 'PRO_EXPIRED',
+  FROZEN = 'FROZEN',
+}
+
+export enum SubscriptionStatus {
+  ACTIVE = 'ACTIVE',
+  EXPIRED = 'EXPIRED',
+  CANCELLED = 'CANCELLED',
+}
+
+export enum PostType {
+  TIP = 'TIP',
+  EXPLANATION = 'EXPLANATION',
+  EXERCISE = 'EXERCISE',
+  ANNOUNCEMENT = 'ANNOUNCEMENT',
+  VIDEO_PREVIEW = 'VIDEO_PREVIEW',
+  STUDENT_QUESTION = 'STUDENT_QUESTION',
+  TEACHER_REQUEST = 'TEACHER_REQUEST',
+  STUDY_TIP = 'STUDY_TIP',
+  DISCUSSION = 'DISCUSSION',
+}
+
+export enum ReviewStatus {
+  PUBLISHED = 'PUBLISHED',
+  REPORTED = 'REPORTED',
+  REMOVED = 'REMOVED',
+}
+
+export enum ProductType {
+  BOOK = 'BOOK',
+  COURSE = 'COURSE',
+  EXAM_PACK = 'EXAM_PACK',
+  BUNDLE = 'BUNDLE',
+  EXERCISE_SHEET = 'EXERCISE_SHEET',
+}
+
+export enum OrderStatus {
+  PENDING = 'PENDING',
+  PAID = 'PAID',
+  FAILED = 'FAILED',
+  REFUNDED = 'REFUNDED',
+}
+
+export enum EntitlementStatus {
+  ACTIVE = 'ACTIVE',
+  REVOKED = 'REVOKED',
+}

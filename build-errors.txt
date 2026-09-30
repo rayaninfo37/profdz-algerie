@@ -1,0 +1,79 @@
+
+> kryty-platform@1.0.0 build
+> next build
+
+▲ Next.js 16.3.3 (Turbopack)
+- Environments: .env
+✓ Running next.config.js took 67ms
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 33.4s
+  Running TypeScript ...
+  Finished TypeScript in 12.0s ...
+  Collecting page data using 3 workers ...
+  Generating static pages using 3 workers (0/32) ...
+  Generating static pages using 3 workers (8/32) 
+  Generating static pages using 3 workers (16/32) 
+  Generating static pages using 3 workers (24/32) 
+✓ Generating static pages using 3 workers (32/32) in 833ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ƒ /
+├ ○ /_not-found
+├ ƒ /about
+├ ƒ /admin
+├ ƒ /api/admin/operations/payments/[id]/approve
+├ ƒ /api/admin/operations/payments/[id]/reject
+├ ƒ /api/admin/operations/verifications/[id]/approve
+├ ƒ /api/admin/operations/verifications/[id]/reject
+├ ƒ /api/admin/seed
+├ ƒ /api/admin/settings
+├ ƒ /api/admin/teachers/verify
+├ ƒ /api/admin/users
+├ ƒ /api/admin/verifications
+├ ƒ /api/auth/login
+├ ƒ /api/auth/logout
+├ ƒ /api/auth/me
+├ ƒ /api/auth/register
+├ ƒ /api/comments
+├ ƒ /api/contact
+├ ƒ /api/documents/[id]
+├ ƒ /api/follows
+├ ƒ /api/notifications
+├ ƒ /api/posts
+├ ƒ /api/posts/[id]/like
+├ ƒ /api/products
+├ ƒ /api/products/[id]/checkout
+├ ƒ /api/profile
+├ ƒ /api/reviews
+├ ƒ /api/teachers/[id]/reach
+├ ƒ /api/teachers/subscription/upgrade
+├ ƒ /api/upload
+├ ƒ /api/verification/request
+├ ○ /assets
+├ ○ /dashboard/institution
+├ ƒ /dashboard/parent
+├ ƒ /dashboard/student
+├ ƒ /dashboard/teacher
+├ ○ /discover
+├ ƒ /feed
+├ ○ /focus
+├ ○ /icon.svg
+├ ○ /institutions
+├ ƒ /institutions/[id]
+├ ƒ /library
+├ ○ /login
+├ ○ /privacy
+├ ƒ /products
+├ ƒ /products/[slug]
+├ ƒ /ranking
+├ ○ /register
+├ ƒ /teachers
+├ ƒ /teachers/[id]
+└ ○ /terms
+
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
