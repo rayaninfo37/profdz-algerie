@@ -1,0 +1,776 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  passwordHash  String
+  fullName      String
+  phone         String?   @unique
+  avatarUrl     String?
+  role          String    @default("STUDENT") // TEACHER, STUDENT, PARENT, ADMIN (Base primary role)
+  activeRole    String?   // Current active persona for dual-role users (e.g. TEACHER or STUDENT)
+  roles         String?   @default("[\"STUDENT\"]") // JSON array of unlocked personas e.g. ["STUDENT", "TEACHER"]
+  wilaya        String?
+  wilayaCode    String?
+  isTestData    Boolean   @default(false)
+  isEmailVerified Boolean @default(false)
+  isPhoneVerified Boolean @default(false)
+  emailVerifiedAt DateTime?
+  termsAccepted Boolean   @default(true)
+  termsAcceptedAt DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // First login tracking (set once, never overwritten)
+  firstLoginAt      DateTime?
+  firstLoginIp      String?
+  firstLoginAgent   String?
+
+  // Soft-delete lifecycle (admin-initiated, 7-day grace period)
+  softDeletedAt     DateTime?
+  restorableUntil   DateTime?
+
+  // Account freeze (admin-initiated)
+  isFrozen          Boolean   @default(false)
+  frozenAt          DateTime?
+
+  teacherProfile     TeacherProfile?
+  studentProfile     StudentProfile?
+  parentProfile      ParentProfile?
+  institutionProfile InstitutionProfile?
+  assistantProfile   AssistantProfile?
+
+  productViewsViewed ProductView[]      @relation("ProductViewer")
+  posts             Post[]
+  comments          Comment[]
+  likes             PostLike[]
+  reviews           Review[]
+  follows           Follow[]           @relation("UserFollows")
+  following         Follow[]           @relation("UserFollowing")
+  reachEventsViewed ReachEvent[]       @relation("ViewerUser")
+  orders            Order[]
+  entitlements      Entitlement[]
+  libraryItems      LibraryItem[]
+  progress          CourseProgress[]
+  notifications     Notification[]
+  auditLogs         AuditLog[]
+  verificationRequests VerificationRequest[]
+  dailyVisits       UserDailyVisit[]
+  contactRequests   ProductContactRequest[]
+  blockedUsers      UserBlock[]        @relation("UserBlocks")
+  blockedByUsers    UserBlock[]        @relation("UserBlockedBy")
+  reportsSent       CommunityReport[]  @relation("ReporterUser")
+  parentInvitesSent ParentInvitation[] @relation("InviterParent")
+  childInvitesRecv  ParentInvitation[] @relation("InvitedChild")
+  productReviews    ProductReview[]
+
+  @@index([role])
+  @@index([isTestData])
+  @@index([wilayaCode])
+  @@index([softDeletedAt])
+  @@index([isFrozen])
+}
+
+model TeacherProfile {
+  id                String            @id @default(uuid())
+  userId            String            @unique
+  user              User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  headline          String?
+  bio               String?
+  subjects          String            // JSON array of strings, e.g. ["Mathematics","Physics"]
+  educationLevels   String            // JSON array of strings, e.g. ["BAC","Secondary"]
+  teachingMode      String            @default("BOTH") // IN_PERSON, ONLINE, BOTH
+  experienceYears   Int               @default(0)
+  qualifications    String?
+  pricingInfo       String?
+  priceMin          Int?
+  priceMax          Int?
+  availability      String?
+  languages         String            @default("[\"Arabic\"]")
+  isVerified        Boolean           @default(false)
+  professionalTitle String            @default("PROFESSOR") // PROFESSOR, DOCTOR, ENGINEER, INSPECTOR
+  subscriptionState String            @default("FREE_ACTIVE") // FREE_ACTIVE, PRO_ACTIVE, PRO_EXPIRED, FROZEN
+  ratingAverage     Float             @default(0)
+  reviewCount       Int               @default(0)
+  storeLocation     String?           // Physical teaching/store location for product context
+  
+  phone             String?
+  whatsapp          String?
+  telegram          String?
+  instagram         String?
+  facebook          String?
+  website           String?
+  sheetsDestination String?           // Google Sheets URL / destination
+  googleRefreshToken String?          // Google OAuth2 Refresh Token
+  googleAccessToken  String?          // Google OAuth2 Cached Access Token
+  googleTokenExpiry  DateTime?        // Google OAuth2 Token Expiry
+  googleEmail        String?          // Connected Google Account Email
+
+  institutionId     String?
+  institution       InstitutionProfile? @relation(fields: [institutionId], references: [id])
+
+  reachEvents       ReachEvent[]      @relation("TeacherTarget")
+  subscriptions     Subscription[]
+  reviews           Review[]          @relation("TeacherReviews")
+  paymentProofs     PaymentProof[]
+  contactRequests   ProductContactRequest[]
+  assistants        AssistantProfile[]
+  productOrders     ProductOrder[]
+
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  @@index([subscriptionState])
+  @@index([isVerified])
+  @@index([subscriptionState, isVerified])
+}
+
+model StudentProfile {
+  id             String         @id @default(uuid())
+  userId         String         @unique
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  studentType    String         @default("PUPIL_SECONDARY") // PUPIL_PRIMARY, PUPIL_MIDDLE, PUPIL_SECONDARY, UNIVERSITY
+  educationLevel String?
+  interests      String?        // JSON array of subjects
+  parentId       String?
+  parent         ParentProfile? @relation(fields: [parentId], references: [id])
+}
+
+model ParentProfile {
+  id          String           @id @default(uuid())
+  userId      String           @unique
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  budgetRange String?
+  children    StudentProfile[]
+}
+
+model InstitutionProfile {
+  id          String           @id @default(uuid())
+  userId      String           @unique
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name        String
+  logo        String?
+  description String?
+  address     String?
+  phone       String?
+  website     String?
+  isVerified  Boolean          @default(false)
+  teachers    TeacherProfile[]
+}
+
+model ReachEvent {
+  id           String         @id @default(uuid())
+  teacherId    String
+  teacher      TeacherProfile @relation("TeacherTarget", fields: [teacherId], references: [id], onDelete: Cascade)
+  viewerUserId String
+  viewer       User           @relation("ViewerUser", fields: [viewerUserId], references: [id], onDelete: Cascade)
+  createdAt    DateTime       @default(now())
+
+  @@unique([teacherId, viewerUserId])
+}
+
+model Subscription {
+  id         String             @id @default(uuid())
+  teacherId  String
+  teacher    TeacherProfile     @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  plan       String             @default("PRO_2800_30DAYS")
+  amount     Float              @default(2800)
+  status     String             @default("ACTIVE") // ACTIVE, EXPIRED, CANCELLED
+  startedAt  DateTime           @default(now())
+  expiresAt  DateTime
+  paymentRef String?
+}
+
+model Post {
+  id             String     @id @default(uuid())
+  authorId       String
+  author         User       @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  title          String?
+  content        String
+  postType       String     @default("TIP") // TIP, EXPLANATION, EXERCISE, ANNOUNCEMENT, VIDEO_PREVIEW
+  mediaUrl       String?
+  subject        String?
+  educationLevel String?
+  viewsCount     Int        @default(0)
+  likes          PostLike[]
+  comments       Comment[]
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  @@index([authorId])
+  @@index([createdAt])
+  @@index([authorId, createdAt])
+}
+
+model PostLike {
+  id        String   @id @default(uuid())
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([postId, userId])
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  postId    String?
+  post      Post?    @relation(fields: [postId], references: [id], onDelete: Cascade)
+  productId String?
+  product   Product? @relation(fields: [productId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content   String
+  createdAt DateTime @default(now())
+
+  @@index([postId])
+  @@index([productId])
+}
+
+model Follow {
+  id          String   @id @default(uuid())
+  followerId  String
+  follower    User     @relation("UserFollows", fields: [followerId], references: [id], onDelete: Cascade)
+  followingId String
+  following   User     @relation("UserFollowing", fields: [followingId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+
+  @@unique([followerId, followingId])
+}
+
+model Review {
+  id          String          @id @default(uuid())
+  targetId    String
+  teacher     TeacherProfile? @relation("TeacherReviews", fields: [targetId], references: [id], onDelete: Cascade)
+  targetType  String          @default("TEACHER")
+  authorId    String
+  author      User            @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  rating      Int             // 1-5
+  comment     String
+  status      String          @default("PUBLISHED") // PUBLISHED, REPORTED, REMOVED
+  createdAt   DateTime        @default(now())
+  
+  @@unique([authorId, targetId])
+  @@index([targetId])
+  @@index([status])
+  @@index([targetId, status])
+}
+
+model Product {
+  id             String         @id @default(uuid())
+  creatorId      String
+  creatorName    String
+  creatorType    String         @default("TEACHER") // TEACHER, INSTITUTION, KRYTY
+  title          String
+  slug           String         @unique
+  description    String
+  coverImage     String?
+  productType    String         @default("BOOK") // BOOK, COURSE, EXAM_PACK, BUNDLE, EXERCISE_SHEET
+  subject        String
+  educationLevel String
+  educationTargets String       @default("[]") // JSON array: ["SECONDARY","3AS","BAC"]
+  priceDZD       Float
+  minPriceDZD    Float?
+  maxPriceDZD    Float?
+  isFree         Boolean        @default(false)
+  previewContent String?
+  isPublished    Boolean        @default(true)
+  ratingAverage  Float          @default(0)
+  reviewCount    Int            @default(0)
+  youtubeUrl     String?        // YouTube video ID (extracted, not full URL)
+  purchaseFormSchema String     @default("[]") // JSON array of dynamic field definitions
+  sheetsWebhookUrl String?      // Google Sheets Apps Script webhook URL per product
+
+  assets         ProductAsset[]
+  modules        CourseModule[]
+  orderItems     OrderItem[]
+  productOrders  ProductOrder[]
+  entitlements   Entitlement[]
+  libraryItems   LibraryItem[]
+  contactRequests ProductContactRequest[]
+  views          ProductView[]
+  comments       Comment[]
+  reviews        ProductReview[]
+
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+}
+
+model ProductReview {
+  id        String   @id @default(uuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rating    Int      // 1-5
+  comment   String
+  status    String   @default("PUBLISHED") // PUBLISHED, REPORTED, REMOVED
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([productId, userId])
+  @@index([productId])
+  @@index([status])
+  @@index([productId, status])
+}
+
+model ProductAsset {
+  id            String   @id @default(uuid())
+  productId     String
+  product       Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  title         String
+  fileUrl       String
+  fileType      String   // IMAGE, VIDEO, PDF
+  assetPurpose  String   @default("ATTACHMENT") // COVER, GALLERY, VIDEO, SAMPLE, ATTACHMENT
+  fileSizeBytes Int      @default(0)
+  isFreePreview Boolean  @default(false)
+}
+
+model CourseModule {
+  id        String   @id @default(uuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  title     String
+  order     Int
+  lessons   Lesson[]
+}
+
+model Lesson {
+  id        String           @id @default(uuid())
+  moduleId  String
+  module    CourseModule     @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  title     String
+  content   String?
+  videoUrl  String?
+  order     Int
+  progress  CourseProgress[]
+}
+
+model CourseProgress {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lessonId  String
+  lesson    Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  completed Boolean  @default(true)
+  updatedAt DateTime @default(now())
+
+  @@unique([userId, lessonId])
+}
+
+model Order {
+  id          String      @id @default(uuid())
+  userId      String
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  totalAmount Float
+  status      String      @default("PENDING") // PENDING, PAID, FAILED, REFUNDED
+  paymentRef  String?
+  items       OrderItem[]
+  createdAt   DateTime    @default(now())
+}
+
+model OrderItem {
+  id        String   @id @default(uuid())
+  orderId   String
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product  @relation(fields: [productId], references: [id])
+  priceDZD  Float
+}
+
+// Internal purchase orders — anonymous buyers, no account required
+model ProductOrder {
+  id               String   @id @default(uuid())
+
+  // Product reference — nullable so historical orders survive product deletion
+  productId        String?
+  product          Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+
+  // Teacher reference — nullable so historical orders survive teacher hard-delete
+  teacherProfileId String?
+  teacherProfile   TeacherProfile? @relation(fields: [teacherProfileId], references: [id], onDelete: SetNull)
+
+  // Snapshots captured AT TIME OF ORDER — immune to future product/teacher changes
+  productTitleSnapshot  String
+  productPriceSnapshot  Float
+  teacherNameSnapshot   String
+  formSchemaSnapshot    String  @default("[]")  // JSON array of FormField at order time
+
+  // Buyer info — anonymous, no account required
+  firstName    String
+  lastName     String
+  phone        String
+  customFields String  @default("{}")  // JSON map of submitted custom field values
+
+  // Idempotency — DB-level unique constraint (survives server restarts)
+  submissionToken  String  @unique
+
+  // Order lifecycle
+  status  String    @default("NEW")  // NEW, READ
+  readAt  DateTime?
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([teacherProfileId])
+  @@index([productId])
+  @@index([status])
+  @@index([createdAt])
+  @@index([teacherProfileId, status])
+}
+
+model Entitlement {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  grantedAt DateTime @default(now())
+  status    String   @default("ACTIVE") // ACTIVE, REVOKED
+
+  @@unique([userId, productId])
+}
+
+model LibraryItem {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  addedAt   DateTime @default(now())
+
+  @@unique([userId, productId])
+}
+
+model PlatformSetting {
+  key   String @id
+  value String
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  message   String
+  type      String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  actorId   String
+  actor     User     @relation(fields: [actorId], references: [id])
+  action    String
+  target    String
+  details   String?
+  category  String   @default("ADMIN") // ADMIN, LOGIN_FIRST, LOGIN_ACTIVITY, SECURITY
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([category])
+  @@index([actorId])
+}
+
+model ContactEvent {
+  id         String   @id @default(uuid())
+  targetId   String   // teacherId or institutionId
+  targetType String   @default("TEACHER") // TEACHER, INSTITUTION
+  productId  String?
+  method     String   // WHATSAPP, TELEGRAM, PHONE
+  viewerId   String?
+  viewerWilaya String?  // Declared profile wilaya of the contact initiator for regional insight
+  ipHash     String?
+  createdAt  DateTime @default(now())
+
+  @@index([targetId, targetType])
+  @@index([productId])
+  @@index([viewerWilaya])
+  @@index([createdAt])
+}
+
+model ProfileView {
+  id         String   @id @default(uuid())
+  targetId   String   // teacherId or institutionId
+  targetType String   @default("TEACHER") // TEACHER, INSTITUTION
+  viewerId   String?
+  ipHash     String?
+  createdAt  DateTime @default(now())
+
+  @@index([targetId, targetType])
+  @@index([createdAt])
+}
+
+model VerificationRequest {
+  id         String   @id @default(uuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role       String   // TEACHER, INSTITUTION
+  fullName   String
+  email      String
+  phone      String
+  specialty  String?
+  notes      String?
+  docUrl     String?
+  status     String   @default("PENDING") // PENDING, APPROVED, REJECTED
+  adminNotes String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model UserDailyVisit {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  dateStr   String   // Format: YYYY-MM-DD in Africa/Algiers timezone
+  createdAt DateTime @default(now())
+
+  @@unique([userId, dateStr])
+  @@index([dateStr])
+}
+
+model PaymentProof {
+  id             String         @id @default(uuid())
+  teacherId      String
+  teacher        TeacherProfile @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  plan           String         @default("PRO_2800_30DAYS")
+  amount         Float          @default(2800)
+  receiptUrl     String
+  transactionRef String?
+  status         String         @default("PENDING") // PENDING, UNDER_REVIEW, APPROVED, REJECTED
+  adminNotes     String?
+  reviewedAt     DateTime?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  @@index([teacherId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model ProductContactRequest {
+  id             String          @id @default(uuid())
+  productId      String
+  product        Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
+  teacherId      String
+  teacher        TeacherProfile  @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status         String          @default("PENDING") // PENDING, CONTACTED, CLOSED
+  message        String?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  @@index([productId])
+  @@index([teacherId])
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model EmailVerificationToken {
+  id        String   @id @default(uuid())
+  email     String
+  tokenHash String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([email])
+}
+
+model UserBlock {
+  id          String   @id @default(uuid())
+  blockerId   String
+  blocker     User     @relation("UserBlocks", fields: [blockerId], references: [id], onDelete: Cascade)
+  blockedId   String
+  blocked     User     @relation("UserBlockedBy", fields: [blockedId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+
+  @@unique([blockerId, blockedId])
+  @@index([blockerId])
+  @@index([blockedId])
+}
+
+model CommunityReport {
+  id          String   @id @default(uuid())
+  reporterId  String
+  reporter    User     @relation("ReporterUser", fields: [reporterId], references: [id], onDelete: Cascade)
+  targetType  String   // POST, COMMENT, USER
+  targetId    String
+  reason      String
+  details     String?
+  status      String   @default("PENDING") // PENDING, REVIEWING, RESOLVED, DISMISSED
+  adminNotes  String?
+  resolvedAt  DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([targetType, targetId])
+  @@index([status])
+  @@index([reporterId])
+  @@index([createdAt])
+}
+
+model ParentInvitation {
+  id         String   @id @default(uuid())
+  parentId   String
+  parent     User     @relation("InviterParent", fields: [parentId], references: [id], onDelete: Cascade)
+  childId    String?
+  child      User?    @relation("InvitedChild", fields: [childId], references: [id], onDelete: Cascade)
+  childEmail String
+  inviteCode String   @unique
+  status     String   @default("PENDING") // PENDING, ACCEPTED, REJECTED, CANCELLED
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([parentId])
+  @@index([childId])
+  @@index([childEmail])
+  @@index([status])
+}
+
+model PhoneVerificationCode {
+  id        String   @id @default(uuid())
+  userId    String
+  phone     String
+  code      String
+  expiresAt DateTime
+  verified  Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([phone, code])
+}
+
+model AssistantProfile {
+  id              String         @id @default(uuid())
+  userId          String         @unique
+  user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parentTeacherId String
+  parentTeacher   TeacherProfile @relation(fields: [parentTeacherId], references: [id], onDelete: Cascade)
+  title           String         @default("مساعد تعليمي معتمد")
+  canManagePosts  Boolean        @default(true)
+  canManageProducts Boolean      @default(false)
+  canReplyMessages Boolean       @default(true)
+  isPublic        Boolean        @default(true)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@index([parentTeacherId])
+}
+
+model ProductView {
+  id        String   @id @default(uuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  viewerId  String?
+  viewer    User?    @relation("ProductViewer", fields: [viewerId], references: [id], onDelete: SetNull)
+  ipHash    String?
+  createdAt DateTime @default(now())
+
+  @@index([productId])
+  @@index([viewerId])
+  @@index([createdAt])
+}
+
+model Plan {
+  id             String   @id @default(uuid())
+  code           String   @unique // e.g. TEACHER_PRO, ACADEMIC_PRO, INSTITUTION_ANNUAL
+  targetPersona  String   // TEACHER, ACADEMIC, INSTITUTION
+  nameAr         String
+  nameFr         String
+  nameEn         String
+  priceDZD       Float
+  durationDays   Int      @default(30)
+  featuresJson   String   @default("[]") // JSON string of features
+  limitsJson     String   @default("{}") // JSON string of quotas
+  isActive       Boolean  @default(true)
+  isTrialEligible Boolean @default(true)
+  order          Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([targetPersona, isActive])
+}
+
+model NavigationItem {
+  id          String   @id @default(uuid())
+  key         String   @unique
+  labelAr     String
+  labelFr     String
+  labelEn     String
+  destination String
+  iconName    String
+  order       Int      @default(0)
+  isVisible   Boolean  @default(true)
+  isDesktop   Boolean  @default(true)
+  isMobile    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([order])
+  @@index([isVisible])
+}
+
+model TaxonomyItem {
+  id          String   @id @default(uuid())
+  type        String   // SUBJECT, FIELD, SPECIALTY, EDUCATION_LEVEL, INSTITUTION_TYPE
+  code        String   @unique
+  nameAr      String
+  nameFr      String
+  nameEn      String
+  targetPersona String? // SCHOOL, UNIVERSITY, ALL
+  order       Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([type, isActive])
+}
+
+model PromotedContent {
+  id             String   @id @default(uuid())
+  type           String   // SPONSOR, PROMOTED
+  titleAr        String
+  titleFr        String
+  titleEn        String
+  descriptionAr  String?
+  descriptionFr  String?
+  descriptionEn  String?
+  imageUrl       String
+  destinationUrl String
+  entityName     String
+  placement      String   @default("HOMEPAGE") // HOMEPAGE, DISCOVERY, FEED, SIDEBAR
+  order          Int      @default(0)
+  isActive       Boolean  @default(true)
+  startDate      DateTime @default(now())
+  endDate        DateTime
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([placement, isActive])
+  @@index([startDate, endDate])
+}
+
+model PasswordResetToken {
+  id        String   @id @default(uuid())
+  email     String
+  tokenHash String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([email])
+}

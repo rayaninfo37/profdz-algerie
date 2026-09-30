@@ -1,0 +1,14 @@
+node_modules/
+.next/
+.env
+.env.*
+!.env.example
+prisma/*.db
+prisma/*.db-*
+prisma/*.bak
+prisma/*.backup
+storage/
+tsconfig.tsbuildinfo
+npm-debug.log*
+.DS_Store
+prisma/*.db.backup* 
