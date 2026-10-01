@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/Button';
 import { getTopRankedTeachersCached } from '@/lib/ranking';
 import { enrichProducts, isPublicProduct } from '@/lib/products';
 import { rankProducts } from '@/lib/productRanking';
+import { unstable_cache } from 'next/cache';
 import {
   Users,
   BookOpen,
@@ -19,22 +20,39 @@ import {
 
 export const revalidate = 0;
 
+// Cached public homepage data layer — 5-minute Data Cache TTL
+// Completely isolated from user session / cookies
+const getHomepagePublicData = unstable_cache(
+  async () => {
+    const [rankedTeachers, rawProducts] = await Promise.all([
+      getTopRankedTeachersCached(12),
+      prisma.product.findMany({
+        where: { isPublished: true },
+        orderBy: { createdAt: 'desc' },
+      }),
+    ]);
+
+    const teachers = rankedTeachers.map((r) => r.teacher);
+    const enrichedProducts = await enrichProducts(rawProducts);
+    const eligibleProducts = enrichedProducts.filter(isPublicProduct);
+    const rankedProducts = rankProducts(eligibleProducts);
+    const products = rankedProducts.slice(0, 6).map((r) => r.product);
+
+    return { teachers, products };
+  },
+  ['homepage-public-data'],
+  {
+    revalidate: 300, // 5 minutes
+    tags: ['homepage-public'],
+  }
+);
+
 export default async function HomePage() {
-  const currentUser = await getCurrentUser();
-
-  // 1. Fetch top 12 teachers with central Bayesian ranking (same data as /teachers)
-  const rankedTeachers = await getTopRankedTeachersCached(12);
-  const teachers = rankedTeachers.map(r => r.teacher);
-
-  // 2. Fetch top 6 real products using shared Bayesian ranking and public eligibility
-  const rawProducts = await prisma.product.findMany({
-    where: { isPublished: true },
-    orderBy: { createdAt: 'desc' },
-  });
-  const enrichedProducts = await enrichProducts(rawProducts);
-  const eligibleProducts = enrichedProducts.filter(isPublicProduct);
-  const rankedProducts = rankProducts(eligibleProducts);
-  const products = rankedProducts.slice(0, 6).map(r => r.product);
+  // Fetch dynamic user session in parallel with cached public data
+  const [currentUser, { teachers, products }] = await Promise.all([
+    getCurrentUser(),
+    getHomepagePublicData(),
+  ]);
 
   return (
     <div className="space-y-16 pb-24 text-white">

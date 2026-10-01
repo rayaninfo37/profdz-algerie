@@ -103,7 +103,16 @@ export async function getAllRankedTeachersCached() {
       },
     },
     include: {
-      user: true,
+      user: {
+        select: {
+          id: true,
+          fullName: true,
+          avatarUrl: true,
+          wilaya: true,
+          isFrozen: true,
+          softDeletedAt: true,
+        },
+      },
       reviews: {
         where: { status: 'PUBLISHED' },
         select: { rating: true },
