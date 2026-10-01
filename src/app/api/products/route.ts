@@ -36,7 +36,7 @@ export async function GET(request: Request) {
     }
     if (creatorId) where.creatorId = creatorId;
 
-    const [total, rawProducts] = await Promise.all([
+    const [total, rawProducts, user] = await Promise.all([
       prisma.product.count({ where }),
       prisma.product.findMany({
         where,
@@ -59,13 +59,13 @@ export async function GET(request: Request) {
         take,
         skip,
       }),
+      getCurrentUser(),
     ]);
 
     const allEnriched = await enrichProducts(rawProducts);
     const products = allEnriched.filter(isPublicProduct);
 
     // Strip private contact data for unauthenticated users (Requirement 18)
-    const user = await getCurrentUser();
     const safeProducts = !user
       ? products.map(({ whatsapp, telegram, phone, ...rest }) => rest)
       : products;

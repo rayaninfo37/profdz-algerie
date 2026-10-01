@@ -18,6 +18,8 @@ export default async function PupilsPage({
   // Query pupils (Primary, Middle, Secondary stages)
   const pupils = await prisma.user.findMany({
     where: {
+      isFrozen: false,
+      softDeletedAt: null,
       role: { in: ['STUDENT', 'PUPIL'] },
       studentProfile: {
         studentType: { in: ['PUPIL_PRIMARY', 'PUPIL_MIDDLE', 'PUPIL_SECONDARY'] },

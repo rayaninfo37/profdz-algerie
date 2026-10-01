@@ -20,8 +20,10 @@ import { isPubliclyDiscoverable, findTeacherByIdOrSlug } from '@/lib/teacherVisi
 export const revalidate = 0;
 
 export default async function TeacherProfilePage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
-  const currentUser = await getCurrentUser();
+  const [{ id }, currentUser] = await Promise.all([
+    params,
+    getCurrentUser(),
+  ]);
 
   const teacher = await findTeacherByIdOrSlug(id, {
     user: true,
@@ -47,13 +49,9 @@ export default async function TeacherProfilePage({ params }: { params: Promise<{
     ipHash = crypto.createHash('sha256').update(clientIp).digest('hex');
   }
 
-  await recordProfileView(teacher.id, 'TEACHER', currentUser?.id, ipHash);
-  if (currentUser) {
-    await recordReachView(teacher.id, currentUser.id);
-  }
-
   const isFrozen = teacher.subscriptionState === 'FROZEN';
 
+  // Parallelize analytics tracking alongside page queries to eliminate waterfall
   const [rawProducts, posts, reviews, viewsCount, contactsCount] = await Promise.all([
     prisma.product.findMany({
       where: { creatorId: teacher.id, isPublished: true },
@@ -92,6 +90,8 @@ export default async function TeacherProfilePage({ params }: { params: Promise<{
     }),
     getProfileViewCount(teacher.id, 'TEACHER'),
     prisma.contactEvent.count({ where: { targetId: teacher.id } }),
+    recordProfileView(teacher.id, 'TEACHER', currentUser?.id, ipHash),
+    currentUser ? recordReachView(teacher.id, currentUser.id) : Promise.resolve(),
   ]);
 
   const allEnrichedProducts = await enrichProducts(rawProducts);

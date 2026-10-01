@@ -1,4 +1,4 @@
-﻿import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { getProfileVisitors } from '@/lib/visitorTracking';
@@ -15,14 +15,11 @@ export async function GET(request: NextRequest) {
 
     let targetId = user.id;
     if (personaType === 'TEACHER' || personaType === 'ACADEMIC') {
-      const teacher = await prisma.teacherProfile.findUnique({ where: { userId: user.id } });
-      if (teacher) targetId = teacher.id;
+      targetId = user.teacherProfile?.id || user.id;
     } else if (personaType === 'STUDENT' || personaType === 'PUPIL') {
-      const student = await prisma.studentProfile.findUnique({ where: { userId: user.id } });
-      if (student) targetId = student.id;
+      targetId = user.studentProfile?.id || user.id;
     } else if (personaType === 'PARENT') {
-      const parent = await prisma.parentProfile.findUnique({ where: { userId: user.id } });
-      if (parent) targetId = parent.id;
+      targetId = user.parentProfile?.id || user.id;
     }
 
     const result = await getProfileVisitors(targetId, personaType, 20);

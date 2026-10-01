@@ -16,9 +16,11 @@ import { ProductPageClient } from '@/components/products/ProductPageClient';
 export const revalidate = 0;
 
 export default async function ProductDetailPage({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = await params;
+  const [{ slug }, currentUser] = await Promise.all([
+    params,
+    getCurrentUser(),
+  ]);
   const decodedSlug = decodeURIComponent(slug);
-  const currentUser = await getCurrentUser();
   const product = await prisma.product.findFirst({
     where: {
       OR: [
@@ -67,7 +69,11 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     notFound();
   }
 
-  const enrichedProduct = await enrichProduct(product);
+  const [enrichedProduct, isEntitled] = await Promise.all([
+    enrichProduct(product),
+    currentUser ? hasUserEntitlement(currentUser.id, product.id) : Promise.resolve(false),
+  ]);
+
   const isAdmin = currentUser?.role === 'ADMIN';
   const isOwner = currentUser?.teacherProfile?.id === product.creatorId;
 
@@ -76,25 +82,11 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     notFound();
   }
 
-  const isEntitled = currentUser ? await hasUserEntitlement(currentUser.id, product.id) : false;
-
-  // Always read LIVE teacher data — never rely on snapshot fields
-  let liveTeacher = await prisma.teacherProfile.findUnique({
-    where: { id: product.creatorId },
-    include: {
-      user: { select: { fullName: true, isFrozen: true, softDeletedAt: true } },
-    },
-  });
-  if (!liveTeacher) {
-    liveTeacher = await prisma.teacherProfile.findUnique({
-      where: { userId: product.creatorId },
-      include: {
-        user: { select: { fullName: true, isFrozen: true, softDeletedAt: true } },
-      },
-    });
-  }
-  const teacherActive = !!(liveTeacher && !liveTeacher.user?.isFrozen && !liveTeacher.user?.softDeletedAt);
-  const liveCreatorName = liveTeacher?.user?.fullName || product.creatorName;
+  // Live teacher status and name derived directly from enrichedProduct (zero redundant DB queries)
+  const teacherActive = product.creatorType === 'TEACHER'
+    ? !enrichedProduct.teacherIsFrozen && !enrichedProduct.teacherSoftDeleted
+    : true;
+  const liveCreatorName = enrichedProduct.creatorName || product.creatorName;
 
   // Track product view (with IP hash for guests, userId for registered users)
   const { headers } = await import('next/headers');

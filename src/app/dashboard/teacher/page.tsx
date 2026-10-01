@@ -25,13 +25,15 @@ export default async function TeacherDashboardPage() {
   }
 
   const teacher = user.teacherProfile;
-  const reachStatus = await getTeacherReachStatus(teacher.id);
 
   // Compute 30-day window in Africa/Algiers timezone
   const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
 
-  // 9 Real Database Metrics Queries
+  // Parallelize all dashboard queries in a single wave to minimize round trips
   const [
+    reachStatus,
+    activeSubscription,
+    contactRequests,
     profileViews30d,
     uniqueReach30d,
     productInquiriesCount,
@@ -42,6 +44,20 @@ export default async function TeacherDashboardPage() {
     productsCount,
     reviewsCount,
   ] = await Promise.all([
+    getTeacherReachStatus(teacher.id),
+    prisma.subscription.findFirst({
+      where: { teacherId: teacher.id, status: 'ACTIVE' },
+      orderBy: { expiresAt: 'desc' },
+    }),
+    prisma.productContactRequest.findMany({
+      where: { teacherId: teacher.id },
+      include: {
+        product: { select: { title: true, slug: true } },
+        user: { select: { fullName: true, email: true, phone: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 10,
+    }),
     // 1. زيارات الملف — آخر 30 يومًا
     prisma.profileView.count({
       where: {
@@ -89,23 +105,6 @@ export default async function TeacherDashboardPage() {
   ]);
 
   const postInteractions30d = postLikes30d + postComments30d;
-
-  // Get active subscription if PRO
-  const activeSubscription = await prisma.subscription.findFirst({
-    where: { teacherId: teacher.id, status: 'ACTIVE' },
-    orderBy: { expiresAt: 'desc' },
-  });
-
-  // Fetch recent product contact requests for this teacher
-  const contactRequests = await prisma.productContactRequest.findMany({
-    where: { teacherId: teacher.id },
-    include: {
-      product: { select: { title: true, slug: true } },
-      user: { select: { fullName: true, email: true, phone: true } },
-    },
-    orderBy: { createdAt: 'desc' },
-    take: 10,
-  });
 
   // Calculate Profile Completeness Score
   let score = 0;

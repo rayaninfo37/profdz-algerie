@@ -1,7 +1,6 @@
 import React, { Suspense } from 'react';
 import Link from 'next/link';
 import { prisma } from '@/lib/db';
-import { getCurrentUser } from '@/lib/auth';
 import { TeacherCard } from '@/components/discovery/TeacherCard';
 import { ProductCard } from '@/components/discovery/ProductCard';
 import { SearchBar } from '@/components/discovery/SearchBar';
@@ -9,7 +8,6 @@ import { Button } from '@/components/ui/Button';
 import { getTopRankedTeachersCached } from '@/lib/ranking';
 import { enrichProducts, isPublicProduct } from '@/lib/products';
 import { rankProducts } from '@/lib/productRanking';
-import { unstable_cache } from 'next/cache';
 import {
   Users,
   BookOpen,
@@ -18,41 +16,24 @@ import {
   Compass,
 } from 'lucide-react';
 
-export const revalidate = 0;
-
-// Cached public homepage data layer — 5-minute Data Cache TTL
-// Completely isolated from user session / cookies
-const getHomepagePublicData = unstable_cache(
-  async () => {
-    const [rankedTeachers, rawProducts] = await Promise.all([
-      getTopRankedTeachersCached(12),
-      prisma.product.findMany({
-        where: { isPublished: true },
-        orderBy: { createdAt: 'desc' },
-      }),
-    ]);
-
-    const teachers = rankedTeachers.map((r) => r.teacher);
-    const enrichedProducts = await enrichProducts(rawProducts);
-    const eligibleProducts = enrichedProducts.filter(isPublicProduct);
-    const rankedProducts = rankProducts(eligibleProducts);
-    const products = rankedProducts.slice(0, 6).map((r) => r.product);
-
-    return { teachers, products };
-  },
-  ['homepage-public-data'],
-  {
-    revalidate: 300, // 5 minutes
-    tags: ['homepage-public'],
-  }
-);
+// Incremental Static Regeneration (ISR): 5-minute CDN cache TTL
+// Delivers instant responses (<100ms) globally from Netlify Edge CDN
+export const revalidate = 300;
 
 export default async function HomePage() {
-  // Fetch dynamic user session in parallel with cached public data
-  const [currentUser, { teachers, products }] = await Promise.all([
-    getCurrentUser(),
-    getHomepagePublicData(),
+  const [rankedTeachers, rawProducts] = await Promise.all([
+    getTopRankedTeachersCached(12),
+    prisma.product.findMany({
+      where: { isPublished: true },
+      orderBy: { createdAt: 'desc' },
+    }),
   ]);
+
+  const teachers = rankedTeachers.map((r) => r.teacher);
+  const enrichedProducts = await enrichProducts(rawProducts);
+  const eligibleProducts = enrichedProducts.filter(isPublicProduct);
+  const rankedProducts = rankProducts(eligibleProducts);
+  const products = rankedProducts.slice(0, 6).map((r) => r.product);
 
   return (
     <div className="space-y-16 pb-24 text-white">
@@ -171,7 +152,7 @@ export default async function HomePage() {
               <TeacherCard
                 key={teacher.id}
                 teacher={teacher as any}
-                isAuthenticated={!!currentUser}
+                isAuthenticated={false}
                 hideContact={true}
               />
             ))}

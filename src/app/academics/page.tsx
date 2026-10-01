@@ -18,6 +18,11 @@ export default async function AcademicsPage({
   const academics = await prisma.teacherProfile.findMany({
     where: {
       subscriptionState: { in: ['FREE_ACTIVE', 'PRO_ACTIVE'] },
+      user: {
+        isFrozen: false,
+        softDeletedAt: null,
+        ...(wilaya ? { wilaya: { contains: wilaya } } : {}),
+      },
       OR: [
         { headline: { contains: 'جامع' } },
         { headline: { contains: 'دكتور' } },
@@ -28,7 +33,6 @@ export default async function AcademicsPage({
         { qualifications: { contains: 'جامعة' } },
         { user: { role: 'ACADEMIC' } },
       ],
-      ...(wilaya ? { user: { wilaya: { contains: wilaya } } } : {}),
     },
     include: {
       user: {

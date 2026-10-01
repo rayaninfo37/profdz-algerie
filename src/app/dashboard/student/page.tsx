@@ -13,16 +13,25 @@ export default async function StudentDashboardPage() {
     redirect('/login');
   }
 
-  const follows = await prisma.follow.findMany({
-    where: { followerId: user.id },
-    include: {
-      following: {
-        include: {
-          teacherProfile: true,
+  const [follows, libraryItemsCount, reviewsCount] = await Promise.all([
+    prisma.follow.findMany({
+      where: { followerId: user.id },
+      select: {
+        following: {
+          select: {
+            id: true,
+            fullName: true,
+            avatarUrl: true,
+            wilaya: true,
+            role: true,
+            teacherProfile: true,
+          },
         },
       },
-    },
-  });
+    }),
+    prisma.libraryItem.count({ where: { userId: user.id } }),
+    prisma.review.count({ where: { authorId: user.id } }),
+  ]);
 
   const followedTeachers = follows
     .filter((f) => f.following.role === 'TEACHER' && f.following.teacherProfile)
@@ -33,11 +42,6 @@ export default async function StudentDashboardPage() {
       wilaya: f.following.wilaya,
       teacherProfile: f.following.teacherProfile,
     }));
-
-  const [libraryItemsCount, reviewsCount] = await Promise.all([
-    prisma.libraryItem.count({ where: { userId: user.id } }),
-    prisma.review.count({ where: { authorId: user.id } }),
-  ]);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 text-slate-100" dir="rtl">

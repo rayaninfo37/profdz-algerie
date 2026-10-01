@@ -5,7 +5,8 @@ import { enrichProducts, isPublicProduct } from '@/lib/products';
 import { rankProducts } from '@/lib/productRanking';
 import { BookOpen } from 'lucide-react';
 
-export const revalidate = 0;
+// Cache public products catalog for 60 seconds (ISR)
+export const revalidate = 60;
 
 export default async function ProductsCatalogPage({
   searchParams,

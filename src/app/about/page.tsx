@@ -7,7 +7,8 @@ import Link from 'next/link';
 import { prisma } from '@/lib/db';
 import { extractYouTubeId, buildYouTubeEmbedUrl } from '@/lib/youtubeUtils';
 
-export const revalidate = 0;
+// Cache static about page for 1 hour
+export const revalidate = 3600;
 
 export default async function AboutKrytyPage() {
   const setting = await prisma.platformSetting.findUnique({

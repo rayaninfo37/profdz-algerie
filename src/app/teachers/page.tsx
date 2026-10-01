@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/Button';
 import { expandSubjectKeywords, expandLevelKeywords } from '@/lib/taxonomy';
 import { calculateBayesianScore } from '@/lib/ranking';
 
-export const revalidate = 0;
+export const revalidate = 30;
 
 interface TeachersPageProps {
   searchParams: Promise<{
@@ -26,8 +26,10 @@ interface TeachersPageProps {
 }
 
 export default async function TeachersDirectoryPage({ searchParams }: TeachersPageProps) {
-  const currentUser = await getCurrentUser();
-  const params = await searchParams;
+  const [currentUser, params] = await Promise.all([
+    getCurrentUser(),
+    searchParams,
+  ]);
 
   // Pagination parameters
   const page = Math.max(1, parseInt(params.page || '1', 10));

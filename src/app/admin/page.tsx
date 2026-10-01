@@ -26,14 +26,11 @@ export default async function AdminDashboardPage() {
   const yesterdayStr = getAlgiersYesterdayDateString();
   const startOfMonth = getAlgiersStartOfMonth();
 
-  const [todayVisits, yesterdayVisits, monthVisits] = await Promise.all([
-    prisma.userDailyVisit.count({ where: { dateStr: todayStr } }),
-    prisma.userDailyVisit.count({ where: { dateStr: yesterdayStr } }),
-    prisma.userDailyVisit.count({ where: { createdAt: { gte: startOfMonth } } }),
-  ]);
-
-  // 2. Comprehensive 15-Metric Breakdown
+  // Parallelize all admin analytics, metrics, moderation, and settings in a single wave
   const [
+    todayVisits,
+    yesterdayVisits,
+    monthVisits,
     totalUsers,
     teachersCount,
     studentsCount,
@@ -48,7 +45,17 @@ export default async function AdminDashboardPage() {
     activeProductsCount,
     productContactsCount,
     reviewsCount,
+    approvedProofs,
+    pendingPaymentProofs,
+    initialCommunityReports,
+    initialAuditLogs,
+    settings,
   ] = await Promise.all([
+    // Traffic visits
+    prisma.userDailyVisit.count({ where: { dateStr: todayStr } }),
+    prisma.userDailyVisit.count({ where: { dateStr: yesterdayStr } }),
+    prisma.userDailyVisit.count({ where: { createdAt: { gte: startOfMonth } } }),
+    // Metrics
     prisma.user.count(),
     prisma.teacherProfile.count(),
     prisma.studentProfile.count(),
@@ -63,71 +70,68 @@ export default async function AdminDashboardPage() {
     prisma.product.count({ where: { isPublished: true } }),
     prisma.productContactRequest.count(),
     prisma.review.count({ where: { status: 'PUBLISHED' } }),
-  ]);
-  const pendingDocsCount = 0;
-
-  // 3. Real Approved Financial Revenue
-  const approvedProofs = await prisma.paymentProof.findMany({
-    where: { status: PaymentProofStatus.APPROVED },
-    select: { amount: true },
-  });
-  const totalApprovedRevenue = approvedProofs.reduce((sum, p) => sum + p.amount, 0);
-
-  // 4. Pending Payment Proofs for Operations Review
-  const pendingPaymentProofs = await prisma.paymentProof.findMany({
-    where: { status: PaymentProofStatus.PENDING },
-    include: {
-      teacher: {
-        select: {
-          id: true,
-          headline: true,
-          phone: true,
-          user: {
-            select: {
-              fullName: true,
-              email: true,
-              wilaya: true,
+    // Revenue
+    prisma.paymentProof.findMany({
+      where: { status: PaymentProofStatus.APPROVED },
+      select: { amount: true },
+    }),
+    // Pending proofs
+    prisma.paymentProof.findMany({
+      where: { status: PaymentProofStatus.PENDING },
+      include: {
+        teacher: {
+          select: {
+            id: true,
+            headline: true,
+            phone: true,
+            user: {
+              select: {
+                fullName: true,
+                email: true,
+                wilaya: true,
+              },
             },
           },
         },
       },
-    },
-    orderBy: { createdAt: 'desc' },
-  });
-
-  // 6. Community Reports for Moderation
-  const initialCommunityReports = await prisma.communityReport.findMany({
-    include: {
-      reporter: {
-        select: {
-          id: true,
-          fullName: true,
-          email: true,
-          role: true,
+      orderBy: { createdAt: 'desc' },
+    }),
+    // Moderation
+    prisma.communityReport.findMany({
+      include: {
+        reporter: {
+          select: {
+            id: true,
+            fullName: true,
+            email: true,
+            role: true,
+          },
         },
       },
-    },
-    orderBy: { createdAt: 'desc' },
-  });
-
-  // 7. Persistent Admin Audit Logs
-  const initialAuditLogs = await prisma.auditLog.findMany({
-    include: {
-      actor: {
-        select: {
-          id: true,
-          fullName: true,
-          email: true,
-          role: true,
+      orderBy: { createdAt: 'desc' },
+    }),
+    // Audit logs
+    prisma.auditLog.findMany({
+      include: {
+        actor: {
+          select: {
+            id: true,
+            fullName: true,
+            email: true,
+            role: true,
+          },
         },
       },
-    },
-    orderBy: { createdAt: 'desc' },
-    take: 50,
-  });
+      orderBy: { createdAt: 'desc' },
+      take: 50,
+    }),
+    // Settings
+    prisma.platformSetting.findMany(),
+  ]);
 
-  // 8. Platform Settings
-  const settings = await prisma.platformSetting.findMany();
+  const pendingDocsCount = 0;
+  const totalApprovedRevenue = approvedProofs.reduce((sum, p) => sum + p.amount, 0);
+
   const settingsMap = settings.reduce((acc, curr) => {
     acc[curr.key] = curr.value;
     return acc;

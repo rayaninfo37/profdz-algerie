@@ -31,13 +31,20 @@ export async function GET(request: Request) {
     });
   }
 
-  // Fetch real counts
-  const [followersCount, followingCount, likesCount, postsCount] = await Promise.all([
-    prisma.follow.count({ where: { followingId: user.id } }),
-    prisma.follow.count({ where: { followerId: user.id } }),
-    prisma.postLike.count({ where: { post: { authorId: user.id } } }),
-    prisma.post.count({ where: { authorId: user.id } }),
-  ]);
+  // Only compute expensive aggregate counts if explicitly requested by caller
+  const { searchParams } = new URL(request.url);
+  const includeStats = searchParams.get('stats') === 'true';
+
+  let stats = { followersCount: 0, followingCount: 0, likesCount: 0, postsCount: 0 };
+  if (includeStats) {
+    const [followersCount, followingCount, likesCount, postsCount] = await Promise.all([
+      prisma.follow.count({ where: { followingId: user.id } }),
+      prisma.follow.count({ where: { followerId: user.id } }),
+      prisma.postLike.count({ where: { post: { authorId: user.id } } }),
+      prisma.post.count({ where: { authorId: user.id } }),
+    ]);
+    stats = { followersCount, followingCount, likesCount, postsCount };
+  }
 
   const safeUser = sanitizeUserForClient(user);
   return NextResponse.json({
@@ -45,7 +52,7 @@ export async function GET(request: Request) {
     blocked: false,
     user: {
       ...safeUser,
-      stats: { followersCount, followingCount, likesCount, postsCount },
+      stats,
     },
   });
 }

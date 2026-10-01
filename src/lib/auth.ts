@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import { SignJWT, jwtVerify } from 'jose';
 import bcrypt from 'bcryptjs';
 import { cookies } from 'next/headers';
@@ -44,7 +45,7 @@ export async function verifyToken(token: string): Promise<JWTPayload | null> {
   }
 }
 
-export async function getCurrentUser() {
+export const getCurrentUser = cache(async () => {
   const cookieStore = await cookies();
   const token = cookieStore.get('kryty_session')?.value;
   if (!token) return null;
@@ -74,7 +75,7 @@ export async function getCurrentUser() {
   }
 
   return user;
-}
+});
 
 export async function setSessionCookie(token: string) {
   const cookieStore = await cookies();

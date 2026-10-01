@@ -13,16 +13,21 @@ export default async function ParentDashboardPage() {
     redirect('/login');
   }
 
-  // Fetch parent profile with user data
-  const parentProfile = await prisma.parentProfile.findUnique({
+  // Reuse parentProfile already loaded by getCurrentUser, or fallback if needed
+  const parentProfile = user.parentProfile || await prisma.parentProfile.findUnique({
     where: { userId: user.id },
   });
 
   const follows = await prisma.follow.findMany({
     where: { followerId: user.id },
-    include: {
+    select: {
       following: {
-        include: {
+        select: {
+          id: true,
+          fullName: true,
+          avatarUrl: true,
+          wilaya: true,
+          role: true,
           teacherProfile: true,
         },
       },
