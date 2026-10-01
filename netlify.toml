@@ -1,2 +1,3 @@
-[functions]
-included_files = ["prisma/dev.db"]
+[build]
+command = "npx prisma generate && npm run build"
+publish = ".next"
