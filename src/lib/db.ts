@@ -9,12 +9,18 @@ const globalForPrisma = globalThis as unknown as {
 const tursoUrl = process.env.TURSO_DATABASE_URL;
 const tursoToken = process.env.TURSO_AUTH_TOKEN;
 
+// Convert libsql:// → https:// for serverless HTTP mode.
+// libsql:// uses WebSocket which stays alive after queries, blocking
+// serverless function cleanup and causing 26+ second stream holds on Netlify.
+// https:// uses per-request HTTP — closes cleanly, no connection lingering.
+const tursoHttpUrl = tursoUrl?.replace(/^libsql:\/\//, 'https://');
+
 const prismaClient =
-  tursoUrl && tursoToken
+  tursoHttpUrl && tursoToken
     ? new PrismaClient({
         adapter: new PrismaLibSQL(
           createClient({
-            url: tursoUrl,
+            url: tursoHttpUrl,
             authToken: tursoToken,
           })
         ),
