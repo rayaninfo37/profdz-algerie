@@ -10,10 +10,11 @@ export const revalidate = 60;
 export default async function AcademicsPage({
   searchParams,
 }: {
-  searchParams?: { q?: string; wilaya?: string };
+  searchParams?: Promise<{ q?: string; wilaya?: string }>;
 }) {
-  const query = searchParams?.q?.toLowerCase() || '';
-  const wilaya = searchParams?.wilaya || '';
+  const params = (await searchParams) || {};
+  const query = params.q?.toLowerCase() || '';
+  const wilaya = params.wilaya || '';
 
   const academics = await prisma.teacherProfile.findMany({
     where: {

@@ -4,7 +4,7 @@ import { prisma } from '@/lib/db';
 import { UserRole } from '@/types';
 import { validateAlgerianPhone } from '@/lib/algerianPhone';
 import { findWilayaCode } from '@/lib/taxonomy';
-import { validateGoogleSheetUrl } from '@/lib/googleSheets';
+
 import { revalidatePath } from 'next/cache';
 import { invalidateRankingCache } from '@/lib/ranking';
 
@@ -244,14 +244,6 @@ export async function PATCH(request: Request) {
           ...(teacherProfile.facebook !== undefined ? { facebook: teacherProfile.facebook } : {}),
           ...(teacherProfile.storeLocation !== undefined ? { storeLocation: typeof teacherProfile.storeLocation === 'string' ? teacherProfile.storeLocation.trim() : null } : {}),
           ...(validatedWebsite !== undefined ? { website: validatedWebsite } : {}),
-          // Google Sheets destination (supports regular Google Sheet URLs and legacy webhooks)
-          ...(teacherProfile.sheetsDestination !== undefined ? {
-            sheetsDestination: (() => {
-              if (!teacherProfile.sheetsDestination || !String(teacherProfile.sheetsDestination).trim()) return null;
-              const val = validateGoogleSheetUrl(String(teacherProfile.sheetsDestination));
-              return val.isValid ? (val.canonicalUrl || String(teacherProfile.sheetsDestination).trim()) : String(teacherProfile.sheetsDestination).trim();
-            })(),
-          } : {}),
         },
       });
     } else if (user.role === UserRole.STUDENT && updatedUser.studentProfile) {

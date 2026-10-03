@@ -9,11 +9,12 @@ export const revalidate = 60;
 export default async function PupilsPage({
   searchParams,
 }: {
-  searchParams?: { q?: string; wilaya?: string; level?: string };
+  searchParams?: Promise<{ q?: string; wilaya?: string; level?: string }>;
 }) {
-  const query = searchParams?.q?.toLowerCase() || '';
-  const wilaya = searchParams?.wilaya || '';
-  const level = searchParams?.level || '';
+  const params = (await searchParams) || {};
+  const query = params.q?.toLowerCase() || '';
+  const wilaya = params.wilaya || '';
+  const level = params.level || '';
 
   // Query pupils (Primary, Middle, Secondary stages)
   const pupils = await prisma.user.findMany({

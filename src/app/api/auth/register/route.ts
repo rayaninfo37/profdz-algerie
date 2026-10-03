@@ -98,11 +98,14 @@ export async function POST(request: Request) {
         if (matches) {
           let ext = matches[1].toLowerCase();
           if (ext === 'jpeg') ext = 'jpg';
-          const buffer = Buffer.from(matches[2], 'base64');
-          if (buffer.length <= 5 * 1024 * 1024) {
-            const { storageService } = await import('@/lib/storage/StorageService');
-            const uploadRes = await storageService.uploadPublic(buffer, `avatar.${ext}`, 'avatars');
-            finalAvatarUrl = uploadRes.url;
+          const allowedExts = ['jpg', 'png', 'webp'];
+          if (allowedExts.includes(ext)) {
+            const buffer = Buffer.from(matches[2], 'base64');
+            if (buffer.length <= 5 * 1024 * 1024) {
+              const { storageService } = await import('@/lib/storage/StorageService');
+              const uploadRes = await storageService.uploadPublic(buffer, `avatar.${ext}`, 'avatars');
+              finalAvatarUrl = uploadRes.url;
+            }
           }
         }
       } catch (uploadErr) {

@@ -274,15 +274,6 @@ export async function POST(request: Request) {
       } catch { /* ignore invalid JSON, use default */ }
     }
 
-    // Google Sheets URL — accepts regular Google Sheet URLs and legacy webhooks
-    let sheetsWebhookUrl: string | undefined = undefined;
-    if (body.sheetsWebhookUrl && body.sheetsWebhookUrl.trim()) {
-      const { validateGoogleSheetUrl } = await import('@/lib/googleSheets');
-      const sheetVal = validateGoogleSheetUrl(body.sheetsWebhookUrl);
-      if (sheetVal.isValid) {
-        sheetsWebhookUrl = sheetVal.canonicalUrl || body.sheetsWebhookUrl.trim();
-      }
-    }
 
     const baseSlug = title
       .toLowerCase()
@@ -319,7 +310,6 @@ export async function POST(request: Request) {
           isPublished: true,
           youtubeUrl: storedYoutubeId,
           purchaseFormSchema: purchaseFormSchemaStr,
-          sheetsWebhookUrl,
           assets: {
             create: [
               ...(coverImage ? [{
