@@ -13,26 +13,35 @@ export default async function ParentDashboardPage() {
     redirect('/login');
   }
 
-  // Reuse parentProfile already loaded by getCurrentUser, or fallback if needed
-  const parentProfile = user.parentProfile || await prisma.parentProfile.findUnique({
-    where: { userId: user.id },
-  });
-
-  const follows = await prisma.follow.findMany({
-    where: { followerId: user.id },
-    select: {
-      following: {
-        select: {
-          id: true,
-          fullName: true,
-          avatarUrl: true,
-          wilaya: true,
-          role: true,
-          teacherProfile: true,
+  // Reuse parentProfile already loaded by getCurrentUser; parallelize follows
+  const [parentProfile, follows] = await Promise.all([
+    user.parentProfile
+      ? Promise.resolve(user.parentProfile)
+      : prisma.parentProfile.findUnique({ where: { userId: user.id } }),
+    prisma.follow.findMany({
+      where: { followerId: user.id },
+      select: {
+        following: {
+          select: {
+            id: true,
+            fullName: true,
+            avatarUrl: true,
+            wilaya: true,
+            role: true,
+            teacherProfile: {
+              select: {
+                id: true,
+                headline: true,
+                subjects: true,
+                subscriptionState: true,
+                isVerified: true,
+              },
+            },
+          },
         },
       },
-    },
-  });
+    }),
+  ]);
 
   const followedTeachers = follows
     .filter((f) => f.following.role === 'TEACHER' && f.following.teacherProfile)

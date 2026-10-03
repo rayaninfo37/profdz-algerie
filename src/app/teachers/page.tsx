@@ -129,79 +129,82 @@ export default async function TeachersDirectoryPage({ searchParams }: TeachersPa
     ],
   };
 
-  // Direct SQL Matching & Total Count
-  const allMatchingTeachers = await prisma.teacherProfile.findMany({
-    where: whereClause,
-    select: {
-      id: true,
-      userId: true,
-      headline: true,
-      bio: true,
-      subjects: true,
-      educationLevels: true,
-      teachingMode: true,
-      experienceYears: true,
-      qualifications: true,
-      pricingInfo: true,
-      priceMin: true,
-      priceMax: true,
-      availability: true,
-      languages: true,
-      isVerified: true,
-      professionalTitle: true,
-      subscriptionState: true,
-      ratingAverage: true,
-      reviewCount: true,
-      storeLocation: true,
-      phone: true,
-      whatsapp: true,
-      telegram: true,
-      createdAt: true,
-      updatedAt: true,
-      user: {
-        select: {
-          id: true,
-          fullName: true,
-          avatarUrl: true,
-          wilaya: true,
-          wilayaCode: true,
-          role: true,
-          createdAt: true,
+  const hasFilters = Boolean(q || wilaya || subject || level || mode || minPriceNum !== null || maxPriceNum !== null);
+
+  let scoredTeachers: any[] = [];
+  let totalCount = 0;
+
+  if (!hasFilters) {
+    const { getAllRankedTeachersCached } = await import('@/lib/ranking');
+    const allRanked = await getAllRankedTeachersCached();
+    totalCount = allRanked.length;
+    scoredTeachers = allRanked.map((r: any) => ({
+      ...(r.teacher || r),
+      bayesianScore: r.bayesianScore ?? 0,
+    }));
+  } else {
+    // Direct SQL Matching with minimal select fields
+    const allMatchingTeachers = await prisma.teacherProfile.findMany({
+      where: whereClause,
+      select: {
+        id: true,
+        userId: true,
+        headline: true,
+        bio: true,
+        subjects: true,
+        educationLevels: true,
+        teachingMode: true,
+        experienceYears: true,
+        isVerified: true,
+        professionalTitle: true,
+        subscriptionState: true,
+        ratingAverage: true,
+        reviewCount: true,
+        priceMin: true,
+        priceMax: true,
+        phone: true,
+        whatsapp: true,
+        telegram: true,
+        facebook: true,
+        updatedAt: true,
+        user: {
+          select: {
+            id: true,
+            fullName: true,
+            avatarUrl: true,
+            wilaya: true,
+          },
         },
+        _count: { select: { reviews: true, reachEvents: true } },
       },
-      _count: { select: { reviews: true, reachEvents: true } },
-    },
-  });
+    });
 
-  const totalCount = allMatchingTeachers.length;
+    totalCount = allMatchingTeachers.length;
 
-  // Rank teachers by Bayesian Weighted Score WR = (v / (v + m)) * R + (m / (v + m)) * C (m=5, C=3.0)
-  const scoredTeachers = allMatchingTeachers.map((t) => {
-    const rawRating = t.ratingAverage || 0;
-    const reviewCount = t.reviewCount || 0;
-    const bayesianScore = calculateBayesianScore(rawRating, reviewCount, 5, 3.0);
-    return {
-      ...t,
-      bayesianScore,
-    };
-  });
+    // Rank teachers by Bayesian Weighted Score WR = (v / (v + m)) * R + (m / (v + m)) * C (m=5, C=3.0)
+    scoredTeachers = allMatchingTeachers.map((t) => {
+      const rawRating = t.ratingAverage || 0;
+      const reviewCount = t.reviewCount || 0;
+      const bayesianScore = calculateBayesianScore(rawRating, reviewCount, 5, 3.0);
+      return {
+        ...t,
+        bayesianScore,
+      };
+    });
 
-  scoredTeachers.sort((a, b) => {
-    // 1. Bayesian score
-    if (b.bayesianScore !== a.bayesianScore) {
-      return b.bayesianScore - a.bayesianScore;
-    }
-    // 2. Review count
-    if (b.reviewCount !== a.reviewCount) {
-      return b.reviewCount - a.reviewCount;
-    }
-    // 3. Verification badge
-    if (a.isVerified !== b.isVerified) {
-      return a.isVerified ? -1 : 1;
-    }
-    // 4. Deterministic fallback
-    return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
-  });
+    scoredTeachers.sort((a, b) => {
+      if (b.bayesianScore !== a.bayesianScore) {
+        return b.bayesianScore - a.bayesianScore;
+      }
+      if (b.reviewCount !== a.reviewCount) {
+        return b.reviewCount - a.reviewCount;
+      }
+      if (a.isVerified !== b.isVerified) {
+        return a.isVerified ? -1 : 1;
+      }
+      return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+    });
+  }
 
   const teachers = scoredTeachers.slice((page - 1) * pageSize, page * pageSize);
 

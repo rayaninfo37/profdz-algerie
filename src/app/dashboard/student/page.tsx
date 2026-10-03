@@ -24,7 +24,15 @@ export default async function StudentDashboardPage() {
             avatarUrl: true,
             wilaya: true,
             role: true,
-            teacherProfile: true,
+            teacherProfile: {
+              select: {
+                id: true,
+                headline: true,
+                subjects: true,
+                subscriptionState: true,
+                isVerified: true,
+              },
+            },
           },
         },
       },

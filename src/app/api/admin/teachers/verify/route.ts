@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { UserRole } from '@/types';
+import { revalidatePath } from 'next/cache';
 
 export async function POST(request: Request) {
   try {
@@ -33,6 +34,10 @@ export async function POST(request: Request) {
         details: `Verification set to ${isVerified} for ${updatedProfile.user.fullName}`,
       },
     });
+
+    // Invalidate ISR caches that show teacher listings
+    revalidatePath('/teachers');
+    revalidatePath('/');
 
     return NextResponse.json({ success: true, profile: updatedProfile });
   } catch (error: any) {

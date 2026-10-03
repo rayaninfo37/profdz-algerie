@@ -247,9 +247,12 @@ export async function PUT(
       },
     });
 
-    // Invalidate ranking cache after product changes (affects product listing)
+    // Invalidate ranking snapshot and ISR page caches
     const { invalidateRankingCache } = await import('@/lib/ranking');
+    const { revalidatePath } = await import('next/cache');
     invalidateRankingCache();
+    revalidatePath('/products');
+    revalidatePath('/');
 
     await prisma.auditLog.create({
       data: {
@@ -324,7 +327,10 @@ export async function DELETE(
     });
 
     const { invalidateRankingCache } = await import('@/lib/ranking');
+    const { revalidatePath } = await import('next/cache');
     invalidateRankingCache();
+    revalidatePath('/products');
+    revalidatePath('/');
 
     await prisma.auditLog.create({
       data: {

@@ -361,6 +361,11 @@ export async function POST(request: Request) {
       });
     });
 
+    // Invalidate ISR cache for products catalog
+    const { revalidatePath } = await import('next/cache');
+    revalidatePath('/products');
+    revalidatePath('/');
+
     return NextResponse.json({ success: true, product });
   } catch (error: any) {
     console.error('Create product error:', error);

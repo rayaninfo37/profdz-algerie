@@ -22,6 +22,7 @@ export default async function ProductsCatalogPage({
   const rawProducts = await prisma.product.findMany({
     where,
     orderBy: { createdAt: 'desc' },
+    take: 200,
   });
 
   const allEnriched = await enrichProducts(rawProducts);

@@ -4,6 +4,7 @@ import { prisma } from '@/lib/db';
 import { UserRole } from '@/types';
 import { validateAlgerianPhone } from '@/lib/algerianPhone';
 import { invalidateRankingCache } from '@/lib/ranking';
+import { revalidatePath } from 'next/cache';
 
 export async function PATCH(
   request: Request,
@@ -98,6 +99,8 @@ export async function PATCH(
     }
 
     invalidateRankingCache();
+    revalidatePath('/teachers');
+    revalidatePath('/');
 
     await prisma.auditLog.create({
       data: {

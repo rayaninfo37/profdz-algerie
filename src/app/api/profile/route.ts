@@ -5,6 +5,8 @@ import { UserRole } from '@/types';
 import { validateAlgerianPhone } from '@/lib/algerianPhone';
 import { findWilayaCode } from '@/lib/taxonomy';
 import { validateGoogleSheetUrl } from '@/lib/googleSheets';
+import { revalidatePath } from 'next/cache';
+import { invalidateRankingCache } from '@/lib/ranking';
 
 export async function GET() {
   try {
@@ -293,6 +295,14 @@ export async function PATCH(request: Request) {
     if (!refreshedUser) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
+
+    // Invalidate ISR caches for teacher listings when teacher profile is updated
+    if (user.role === UserRole.TEACHER) {
+      invalidateRankingCache();
+      revalidatePath('/teachers');
+      revalidatePath('/');
+    }
+
     return NextResponse.json({ success: true, user: sanitizeUserForClient(refreshedUser) });
   } catch (error: any) {
     console.error('Profile update error:', error);

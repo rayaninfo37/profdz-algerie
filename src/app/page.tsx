@@ -26,6 +26,7 @@ export default async function HomePage() {
     prisma.product.findMany({
       where: { isPublished: true },
       orderBy: { createdAt: 'desc' },
+      take: 20,
     }),
   ]);
 

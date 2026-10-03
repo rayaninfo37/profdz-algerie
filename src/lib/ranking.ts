@@ -78,9 +78,9 @@ export function rankTeachers<T extends TeacherRankingInput>(
   }));
 }
 
-// In-Memory 15-minute Ranking Snapshot Cache
+// In-Memory 15-minute Ranking Snapshot Cache (900 seconds = 15 minutes)
 let cachedRankingSnapshot: { data: any[]; timestamp: number } | null = null;
-const RANKING_CACHE_TTL_MS = 15 * 60 * 1000; // 15 minutes
+const RANKING_CACHE_TTL_MS = 900 * 1000; // 900 seconds
 
 export async function getAllRankedTeachersCached() {
   const now = Date.now();
@@ -102,15 +102,32 @@ export async function getAllRankedTeachersCached() {
         softDeletedAt: null,
       },
     },
-    include: {
+    select: {
+      id: true,
+      userId: true,
+      headline: true,
+      bio: true,
+      subjects: true,
+      educationLevels: true,
+      teachingMode: true,
+      experienceYears: true,
+      isVerified: true,
+      professionalTitle: true,
+      subscriptionState: true,
+      ratingAverage: true,
+      reviewCount: true,
+      priceMin: true,
+      priceMax: true,
+      phone: true,
+      whatsapp: true,
+      telegram: true,
+      facebook: true,
       user: {
         select: {
           id: true,
           fullName: true,
           avatarUrl: true,
           wilaya: true,
-          isFrozen: true,
-          softDeletedAt: true,
         },
       },
       reviews: {

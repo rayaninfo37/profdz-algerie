@@ -51,7 +51,7 @@ export default async function TeacherProfilePage({ params }: { params: Promise<{
 
   const isFrozen = teacher.subscriptionState === 'FROZEN';
 
-  // Parallelize analytics tracking alongside page queries to eliminate waterfall
+  // Parallelize all BLOCKING data queries — no analytics writes here
   const [rawProducts, posts, reviews, viewsCount, contactsCount] = await Promise.all([
     prisma.product.findMany({
       where: { creatorId: teacher.id, isPublished: true },
@@ -90,9 +90,13 @@ export default async function TeacherProfilePage({ params }: { params: Promise<{
     }),
     getProfileViewCount(teacher.id, 'TEACHER'),
     prisma.contactEvent.count({ where: { targetId: teacher.id } }),
-    recordProfileView(teacher.id, 'TEACHER', currentUser?.id, ipHash),
-    currentUser ? recordReachView(teacher.id, currentUser.id) : Promise.resolve(),
   ]);
+
+  // Fire-and-forget analytics — do NOT await, never block HTML generation
+  recordProfileView(teacher.id, 'TEACHER', currentUser?.id, ipHash).catch(() => {});
+  if (currentUser) {
+    recordReachView(teacher.id, currentUser.id).catch(() => {});
+  }
 
   const allEnrichedProducts = await enrichProducts(rawProducts);
   const products = allEnrichedProducts.filter(isPublicProduct);

@@ -41,9 +41,8 @@ export const Navbar = () => {
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
 
   useEffect(() => {
-    fetch('/api/auth/me')
-      .then((res) => res.json())
-      .then((data) => {
+    import('@/lib/clientAuth').then(({ getClientAuth }) => {
+      getClientAuth().then((data) => {
         if (data.authenticated) {
           setCurrentUser(data.user);
           fetch('/api/notifications')
@@ -60,9 +59,9 @@ export const Navbar = () => {
           setCurrentUser(null);
         }
         setLoading(false);
-      })
-      .catch(() => setLoading(false));
-  }, [pathname]);
+      }).catch(() => setLoading(false));
+    });
+  }, []); // Fetch once on mount — auth state persists across navigation via deduplicated client cache
 
   const handleMarkNotificationsRead = async () => {
     setNotifDropdownOpen(!notifDropdownOpen);
@@ -73,7 +72,9 @@ export const Navbar = () => {
   };
 
   const handleLogout = async () => {
+    const { clearClientAuthCache } = await import('@/lib/clientAuth');
     await fetch('/api/auth/logout', { method: 'POST' });
+    clearClientAuthCache();
     setCurrentUser(null);
     router.push('/login');
     router.refresh();

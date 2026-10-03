@@ -34,7 +34,13 @@ export default async function AcademicsPage({
         { user: { role: 'ACADEMIC' } },
       ],
     },
-    include: {
+    select: {
+      id: true,
+      headline: true,
+      bio: true,
+      subjects: true,
+      isVerified: true,
+      experienceYears: true,
       user: {
         select: {
           id: true,

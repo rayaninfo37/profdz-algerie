@@ -55,11 +55,67 @@ export const getCurrentUser = cache(async () => {
 
   const user = await prisma.user.findUnique({
     where: { id: payload.userId },
-    include: {
-      teacherProfile: true,
-      studentProfile: true,
-      parentProfile: true,
-      institutionProfile: true,
+    select: {
+      id: true,
+      fullName: true,
+      email: true,
+      role: true,
+      activeRole: true,
+      avatarUrl: true,
+      wilaya: true,
+      isFrozen: true,
+      softDeletedAt: true,
+      passwordHash: true,
+      teacherProfile: {
+        select: {
+          id: true,
+          userId: true,
+          headline: true,
+          bio: true,
+          subjects: true,
+          educationLevels: true,
+          teachingMode: true,
+          experienceYears: true,
+          qualifications: true,
+          isVerified: true,
+          professionalTitle: true,
+          subscriptionState: true,
+          ratingAverage: true,
+          reviewCount: true,
+          priceMin: true,
+          priceMax: true,
+          phone: true,
+          whatsapp: true,
+          telegram: true,
+          facebook: true,
+          storeLocation: true,
+          googleAccessToken: true,
+          googleRefreshToken: true,
+          googleTokenExpiry: true,
+        },
+      },
+      studentProfile: {
+        select: {
+          id: true,
+          userId: true,
+          studentType: true,
+          educationLevel: true,
+          interests: true,
+        },
+      },
+      parentProfile: {
+        select: {
+          id: true,
+          userId: true,
+        },
+      },
+      institutionProfile: {
+        select: {
+          id: true,
+          userId: true,
+          name: true,
+        },
+      },
     },
   });
 

@@ -38,15 +38,14 @@ export const Sidebar = () => {
   const [currentUser, setCurrentUser] = useState<any>(null);
 
   useEffect(() => {
-    fetch('/api/auth/me')
-      .then((res) => res.json())
-      .then((data) => {
+    import('@/lib/clientAuth').then(({ getClientAuth }) => {
+      getClientAuth().then((data) => {
         if (data.authenticated) {
           setCurrentUser(data.user);
         }
-      })
-      .catch(() => {});
-  }, [pathname]);
+      }).catch(() => {});
+    });
+  }, []); // Fetch once on mount via deduplicated client cache
 
   const label = (item: { labelAr: string; labelEn: string; labelFr: string }) => item.labelAr;
 

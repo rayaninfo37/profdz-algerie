@@ -88,18 +88,18 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     : true;
   const liveCreatorName = enrichedProduct.creatorName || product.creatorName;
 
-  // Track product view (with IP hash for guests, userId for registered users)
+  // Fire-and-forget product view tracking — never blocks HTML generation
   const { headers } = await import('next/headers');
-  const crypto = await import('crypto');
+  const cryptoMod = await import('crypto');
   let ipHash: string | undefined = undefined;
   if (!currentUser) {
     const headersList = await headers();
     const forwardedFor = headersList.get('x-forwarded-for') || headersList.get('x-real-ip') || '127.0.0.1';
     const clientIp = forwardedFor.split(',')[0].trim();
-    ipHash = crypto.createHash('sha256').update(clientIp).digest('hex');
+    ipHash = cryptoMod.createHash('sha256').update(clientIp).digest('hex');
   }
   const { recordProductVisitor } = await import('@/lib/visitorTracking');
-  await recordProductVisitor(product.id, currentUser?.id, ipHash);
+  recordProductVisitor(product.id, currentUser?.id, ipHash).catch(() => {});
 
   // Strip contact data for unauthenticated users (Requirement 18)
   const safeProduct = !currentUser
