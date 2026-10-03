@@ -144,10 +144,10 @@ export default async function PupilsPage({
                   {stageLabel}
                 </span>
                 <Link
-                  href={`/students/${pupil.id}`}
+                  href={`/teachers`}
                   className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-500 hover:to-cyan-500 text-white text-xs font-bold transition-all shadow-md shadow-cyan-500/20"
                 >
-                  عرض الملف
+                  ابحث عن أستاذ
                 </Link>
               </div>
             </div>

@@ -90,8 +90,25 @@ export async function POST(request: Request) {
     const userRole = role as UserRole;
     const wilayaCode = findWilayaCode(wilaya);
 
-    // Enforce validated avatar
-    const finalAvatarUrl = avatarUrl.trim();
+    // Enforce validated avatar & convert base64 to static uploaded file
+    let finalAvatarUrl = avatarUrl.trim();
+    if (finalAvatarUrl.startsWith('data:image/')) {
+      try {
+        const matches = finalAvatarUrl.match(/^data:image\/([a-zA-Z0-9.+-]+);base64,(.+)$/);
+        if (matches) {
+          let ext = matches[1].toLowerCase();
+          if (ext === 'jpeg') ext = 'jpg';
+          const buffer = Buffer.from(matches[2], 'base64');
+          if (buffer.length <= 5 * 1024 * 1024) {
+            const { storageService } = await import('@/lib/storage/StorageService');
+            const uploadRes = await storageService.uploadPublic(buffer, `avatar.${ext}`, 'avatars');
+            finalAvatarUrl = uploadRes.url;
+          }
+        }
+      } catch (uploadErr) {
+        console.warn('[REGISTER] Failed to convert base64 avatar to file:', uploadErr);
+      }
+    }
 
     const newUser = await prisma.user.create({
       data: {

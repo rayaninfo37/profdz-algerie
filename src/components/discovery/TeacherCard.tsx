@@ -64,6 +64,19 @@ export const TeacherCard: React.FC<TeacherCardProps> = ({
   const [rating, setRating] = useState(5);
   const [reviewComment, setReviewComment] = useState('');
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+  const [isAuth, setIsAuth] = useState(isAuthenticated);
+
+  React.useEffect(() => {
+    if (!isAuthenticated) {
+      import('@/lib/clientAuth').then(({ getClientAuth }) => {
+        getClientAuth().then((data) => {
+          if (data.authenticated) setIsAuth(true);
+        });
+      });
+    } else {
+      setIsAuth(true);
+    }
+  }, [isAuthenticated]);
 
   const subjectsList: string[] = typeof teacher.subjects === 'string'
     ? JSON.parse(teacher.subjects || '[]')
@@ -263,7 +276,7 @@ export const TeacherCard: React.FC<TeacherCardProps> = ({
       {/* External Contact Modal Drawer */}
       <Modal isOpen={contactModalOpen} onClose={() => setContactModalOpen(false)} title={`${t.discovery.contact} ${teacher.user.fullName}`}>
         <div className="space-y-4 text-slate-200">
-          {!isAuthenticated ? (
+          {!isAuth ? (
             <div className="space-y-4">
               <div className="flex items-center gap-3 p-3.5 bg-cyan-950/40 border border-cyan-500/30 rounded-xl">
                 <Lock className="w-6 h-6 text-cyan-400 shrink-0" />

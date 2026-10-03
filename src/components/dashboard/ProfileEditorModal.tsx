@@ -8,7 +8,6 @@ import { SecuritySettings } from '@/components/dashboard/SecuritySettings';
 import { SUBJECTS, EDUCATION_LEVELS, WILAYAS, TEACHING_MODES } from '@/lib/taxonomy';
 import { User as UserIcon, Award, Save, Plus, Trash2, Shield, Briefcase, MapPin } from 'lucide-react';
 import { validateAlgerianPhone } from '@/lib/algerianPhone';
-import { validateGoogleSheetUrl } from '@/lib/googleSheets';
 
 export interface ProfileEditorModalProps {
   isOpen: boolean;
@@ -57,7 +56,6 @@ export const ProfileEditorModal: React.FC<ProfileEditorModalProps> = ({
   const [whatsapp, setWhatsapp] = useState('');
   const [telegram, setTelegram] = useState('');
   const [website, setWebsite] = useState('');
-  const [sheetsDestination, setSheetsDestination] = useState('');
   const [storeLocation, setStoreLocation] = useState('');
 
   // Student specific
@@ -90,7 +88,6 @@ export const ProfileEditorModal: React.FC<ProfileEditorModalProps> = ({
       setWhatsapp(tp.whatsapp || '');
       setTelegram(tp.telegram || '');
       setWebsite(tp.website || '');
-      setSheetsDestination(tp.sheetsDestination || '');
       setStoreLocation(tp.storeLocation || '');
 
       // Qualifications
@@ -169,14 +166,6 @@ export const ProfileEditorModal: React.FC<ProfileEditorModalProps> = ({
           return;
         }
       }
-      if (sheetsDestination && sheetsDestination.trim()) {
-        const sdVal = validateGoogleSheetUrl(sheetsDestination.trim());
-        if (!sdVal.isValid) {
-          setError(sdVal.error || 'رابط Google Sheet غير صالح.');
-          setIsSaving(false);
-          return;
-        }
-      }
     }
 
     try {
@@ -201,7 +190,6 @@ export const ProfileEditorModal: React.FC<ProfileEditorModalProps> = ({
           whatsapp: whatsapp.trim() || null,
           telegram: telegram.trim() || null,
           website: website.trim() || null,
-          sheetsDestination: sheetsDestination.trim() || null,
           storeLocation: storeLocation.trim() || null,
         };
       } else if (user.role === 'STUDENT') {
@@ -634,21 +622,6 @@ export const ProfileEditorModal: React.FC<ProfileEditorModalProps> = ({
                 className="w-full px-3 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-sm sm:text-base text-white font-mono placeholder-stone-500 outline-none"
               />
               <p className="text-xs text-stone-400">يجب أن يبدأ بـ https://</p>
-            </div>
-
-            {/* Google Sheets Destination */}
-            <div className="space-y-1.5 p-3 bg-slate-900/60 rounded-xl border border-slate-800">
-              <label className="text-xs sm:text-sm font-bold text-teal-300 block">جدول Google Sheets لتلقي الطلبات</label>
-              <input
-                type="url"
-                value={sheetsDestination}
-                onChange={(e) => setSheetsDestination(e.target.value)}
-                placeholder="https://docs.google.com/spreadsheets/d/.../edit"
-                className="w-full px-3 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-sm sm:text-base text-white font-mono placeholder-stone-500 outline-none"
-              />
-              <p className="text-xs text-stone-400 pt-1">
-                الصق رابط جدول Google الخاص بك مباشرة لتصلك طلبات الشراء تلقائياً دون أي إعداد تقني.
-              </p>
             </div>
 
             {/* Store Location */}

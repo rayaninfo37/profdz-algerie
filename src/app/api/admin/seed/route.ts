@@ -23,7 +23,7 @@ export async function POST() {
     }
 
     // Trigger seed command safely
-    const { stdout } = await execAsync('cmd /c npx prisma db seed');
+    const { stdout } = await execAsync('npx prisma db seed');
 
     return NextResponse.json({
       success: true,

@@ -26,7 +26,26 @@ export default async function HomePage() {
     prisma.product.findMany({
       where: { isPublished: true },
       orderBy: { createdAt: 'desc' },
-      take: 20,
+      take: 12,
+      select: {
+        id: true,
+        creatorId: true,
+        creatorName: true,
+        creatorType: true,
+        title: true,
+        slug: true,
+        description: true,
+        coverImage: true,
+        productType: true,
+        subject: true,
+        educationLevel: true,
+        priceDZD: true,
+        isFree: true,
+        previewContent: true,
+        isPublished: true,
+        createdAt: true,
+        updatedAt: true,
+      },
     }),
   ]);
 

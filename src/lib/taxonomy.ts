@@ -134,13 +134,25 @@ export const TEACHING_MODES = [
 export const SUBJECT_NAMES = SUBJECTS.map(s => s.name);
 export const EDUCATION_LEVEL_LABELS = EDUCATION_LEVELS.map(l => l.label);
 
-// Validation helpers — server-side subject/level enforcement
+// Validation helpers — server-side subject/level enforcement with robust keyword & partial matching
 export function isValidSubjectName(name: string): boolean {
-  return SUBJECTS.some(s => s.name === name);
+  if (!name || typeof name !== 'string') return false;
+  const trimmed = name.trim();
+  if (trimmed.length < 2) return false;
+  return (
+    SUBJECTS.some(s => s.name === trimmed || s.name.includes(trimmed) || trimmed.includes(s.name) || s.id === trimmed) ||
+    expandSubjectKeywords(trimmed).length > 0
+  );
 }
 
 export function isValidEducationLevelLabel(label: string): boolean {
-  return EDUCATION_LEVELS.some(l => l.label === label);
+  if (!label || typeof label !== 'string') return false;
+  const trimmed = label.trim();
+  if (trimmed.length < 2) return false;
+  return (
+    EDUCATION_LEVELS.some(l => l.label === trimmed || l.label.includes(trimmed) || trimmed.includes(l.label) || l.id === trimmed) ||
+    expandLevelKeywords(trimmed).length > 0
+  );
 }
 
 export function getWilayaByCode(code: string) {

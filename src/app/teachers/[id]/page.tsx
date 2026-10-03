@@ -56,9 +56,30 @@ export default async function TeacherProfilePage({ params }: { params: Promise<{
     prisma.product.findMany({
       where: { creatorId: teacher.id, isPublished: true },
       orderBy: { createdAt: 'desc' },
+      take: 12,
+      select: {
+        id: true,
+        creatorId: true,
+        creatorName: true,
+        creatorType: true,
+        title: true,
+        slug: true,
+        description: true,
+        coverImage: true,
+        productType: true,
+        subject: true,
+        educationLevel: true,
+        priceDZD: true,
+        isFree: true,
+        previewContent: true,
+        isPublished: true,
+        createdAt: true,
+        updatedAt: true,
+      },
     }),
     prisma.post.findMany({
       where: { authorId: teacher.userId },
+      take: 10,
       include: {
         author: {
           select: {
@@ -66,16 +87,31 @@ export default async function TeacherProfilePage({ params }: { params: Promise<{
             fullName: true,
             avatarUrl: true,
             role: true,
-            teacherProfile: true,
+            teacherProfile: {
+              select: {
+                id: true,
+                isVerified: true,
+                professionalTitle: true,
+                subscriptionState: true,
+              },
+            },
           },
         },
-        likes: true,
-        comments: { include: { user: true } },
+        likes: { select: { id: true, userId: true } },
+        comments: {
+          take: 5,
+          include: {
+            user: {
+              select: { id: true, fullName: true, avatarUrl: true },
+            },
+          },
+        },
       },
       orderBy: { createdAt: 'desc' },
     }),
     prisma.review.findMany({
       where: { targetId: teacher.id, status: 'PUBLISHED' },
+      take: 20,
       include: {
         author: {
           select: {

@@ -22,7 +22,26 @@ export default async function ProductsCatalogPage({
   const rawProducts = await prisma.product.findMany({
     where,
     orderBy: { createdAt: 'desc' },
-    take: 200,
+    take: 60,
+    select: {
+      id: true,
+      creatorId: true,
+      creatorName: true,
+      creatorType: true,
+      title: true,
+      slug: true,
+      description: true,
+      coverImage: true,
+      productType: true,
+      subject: true,
+      educationLevel: true,
+      priceDZD: true,
+      isFree: true,
+      previewContent: true,
+      isPublished: true,
+      createdAt: true,
+      updatedAt: true,
+    },
   });
 
   const allEnriched = await enrichProducts(rawProducts);

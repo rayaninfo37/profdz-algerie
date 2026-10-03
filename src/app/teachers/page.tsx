@@ -1,7 +1,6 @@
 import React, { Suspense } from 'react';
 import Link from 'next/link';
 import { prisma } from '@/lib/db';
-import { getCurrentUser } from '@/lib/auth';
 import { TeacherCard } from '@/components/discovery/TeacherCard';
 import { SearchBar } from '@/components/discovery/SearchBar';
 import { Users, ChevronRight, ChevronLeft, Filter } from 'lucide-react';
@@ -26,10 +25,7 @@ interface TeachersPageProps {
 }
 
 export default async function TeachersDirectoryPage({ searchParams }: TeachersPageProps) {
-  const [currentUser, params] = await Promise.all([
-    getCurrentUser(),
-    searchParams,
-  ]);
+  const params = await searchParams;
 
   // Pagination parameters
   const page = Math.max(1, parseInt(params.page || '1', 10));
@@ -303,7 +299,6 @@ export default async function TeachersDirectoryPage({ searchParams }: TeachersPa
             <TeacherCard
               key={t.id}
               teacher={t as any}
-              isAuthenticated={!!currentUser}
               hideContact={true}
             />
           ))}

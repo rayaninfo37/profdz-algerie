@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { getCurrentUser } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { UserRole } from '@/types';
@@ -128,6 +129,8 @@ export async function PATCH(request: Request) {
           });
         }
         invalidateRankingCache();
+        revalidatePath('/teachers');
+        revalidatePath('/');
         await prisma.auditLog.create({
           data: { actorId: user.id, action: 'FREEZE_USER', target: targetUserId, category: 'ADMIN', details: adminNote || 'Account frozen by admin' },
         });
@@ -166,6 +169,8 @@ export async function PATCH(request: Request) {
           });
         }
         invalidateRankingCache();
+        revalidatePath('/teachers');
+        revalidatePath('/');
         await prisma.auditLog.create({
           data: { actorId: user.id, action: 'UNFREEZE_USER', target: targetUserId, category: 'ADMIN', details: adminNote || 'Account unfrozen by admin' },
         });
@@ -177,6 +182,8 @@ export async function PATCH(request: Request) {
         const graceEnd = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
         await prisma.user.update({ where: { id: targetUserId }, data: { softDeletedAt: now, restorableUntil: graceEnd } });
         invalidateRankingCache();
+        revalidatePath('/teachers');
+        revalidatePath('/');
         await prisma.auditLog.create({
           data: { actorId: user.id, action: 'SOFT_DELETE_USER', target: targetUserId, category: 'ADMIN', details: adminNote || `Soft deleted. Restorable until ${graceEnd.toISOString()}` },
         });
@@ -187,6 +194,8 @@ export async function PATCH(request: Request) {
         if (!targetUser.softDeletedAt) return NextResponse.json({ error: 'الحساب غير محذوف.' }, { status: 400 });
         await prisma.user.update({ where: { id: targetUserId }, data: { softDeletedAt: null, restorableUntil: null, isFrozen: false } });
         invalidateRankingCache();
+        revalidatePath('/teachers');
+        revalidatePath('/');
         await prisma.auditLog.create({
           data: { actorId: user.id, action: 'RESTORE_USER', target: targetUserId, category: 'ADMIN', details: adminNote || 'Account restored by admin' },
         });
@@ -245,6 +254,8 @@ export async function PATCH(request: Request) {
         }
 
         invalidateRankingCache();
+        revalidatePath('/teachers');
+        revalidatePath('/');
         await prisma.auditLog.create({
           data: { actorId: user.id, action: 'UPDATE_SUBSCRIPTION', target: targetUserId, category: 'ADMIN', details: `Subscription extended by ${days} days` },
         });

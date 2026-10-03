@@ -5,7 +5,6 @@ import { CreatePostModal } from '@/components/feed/CreatePostModal';
 import { ProfileEditorModal } from '@/components/dashboard/ProfileEditorModal';
 import { PaymentProofModal } from '@/components/dashboard/PaymentProofModal';
 import { CreateProductModal } from '@/components/dashboard/CreateProductModal';
-import { SecuritySettings } from '@/components/dashboard/SecuritySettings';
 import {
   Newspaper,
   BookOpen,
@@ -19,7 +18,6 @@ import {
   CheckCircle2,
   Clock,
   Send,
-  Lock,
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import Link from 'next/link';
@@ -265,15 +263,6 @@ export const TeacherDashboardClient: React.FC<TeacherDashboardClientProps> = ({
         onClose={() => setCreatePostOpen(false)}
         onPostCreated={() => window.location.reload()}
       />
-
-      {/* Security Settings Section */}
-      <div className="clean-card p-6 bg-[#111D38] border border-[#1E3A5F] rounded-2xl space-y-4">
-        <h2 className="text-base font-bold text-white flex items-center gap-2">
-          <Lock className="w-5 h-5 text-teal-400" />
-          إعدادات الأمان والحساب
-        </h2>
-        <SecuritySettings />
-      </div>
 
       <CreateProductModal
         isOpen={createProductOpen}

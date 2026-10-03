@@ -7,7 +7,6 @@ import { BookOpen, Upload, AlertCircle, Youtube } from 'lucide-react';
 import { useToast } from '@/context/ToastContext';
 import { SUBJECT_NAMES } from '@/lib/taxonomy';
 import { KRYTY_CONFIG } from '@/lib/config';
-import { validateGoogleSheetUrl } from '@/lib/googleSheets';
 
 interface CreateProductModalProps {
   isOpen: boolean;
@@ -57,7 +56,6 @@ export const CreateProductModal: React.FC<CreateProductModalProps> = ({
   const [galleryFiles, setGalleryFiles] = useState<File[]>([]);
   const [youtubeUrl, setYoutubeUrl] = useState('');
   const [youtubeError, setYoutubeError] = useState('');
-  const [sheetsWebhookUrl, setSheetsWebhookUrl] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -100,13 +98,6 @@ export const CreateProductModal: React.FC<CreateProductModalProps> = ({
     if (ytErr) {
       setYoutubeError(ytErr);
       return;
-    }
-    if (sheetsWebhookUrl.trim()) {
-      const sheetVal = validateGoogleSheetUrl(sheetsWebhookUrl.trim());
-      if (!sheetVal.isValid) {
-        setError(sheetVal.error || 'رابط Google Sheet غير صالح.');
-        return;
-      }
     }
 
     setLoading(true);
@@ -161,7 +152,6 @@ export const CreateProductModal: React.FC<CreateProductModalProps> = ({
           coverSizeBytes: uploadedCoverSize,
           galleryImages: uploadedGallery,
           youtubeUrl: youtubeUrl.trim() || undefined,
-          sheetsWebhookUrl: sheetsWebhookUrl.trim() || undefined,
         }),
       });
 
@@ -373,23 +363,6 @@ export const CreateProductModal: React.FC<CreateProductModalProps> = ({
               className={`w-full px-3.5 py-2.5 bg-slate-900 border rounded-xl text-xs text-white outline-none focus:border-teal-500 ${youtubeError ? 'border-rose-600' : 'border-slate-700'}`}
             />
             {youtubeError && <p className="text-[11px] text-rose-400">{youtubeError}</p>}
-          </div>
-
-          {/* Google Sheets Destination URL */}
-          <div className="space-y-1">
-            <label className="text-xs font-bold text-stone-300">
-              جدول Google Sheets لتلقي طلبات هذا المنتج (اختياري)
-            </label>
-            <input
-              type="url"
-              value={sheetsWebhookUrl}
-              onChange={(e) => setSheetsWebhookUrl(e.target.value)}
-              placeholder="https://docs.google.com/spreadsheets/d/.../edit"
-              className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white outline-none focus:border-teal-500 font-mono placeholder-stone-500"
-            />
-            <p className="text-[10px] text-stone-400">
-              الصق رابط جدول Google لتصلك الطلبات مباشرة فيه، أو اتركه فارغاً لاستخدام الجدول العام لملفك الشخصي.
-            </p>
           </div>
 
           {/* Preview Content */}

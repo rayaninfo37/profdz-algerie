@@ -41,7 +41,6 @@ export const AdminEditTeacherModal: React.FC<AdminEditTeacherModalProps> = ({
   const [website, setWebsite] = useState(user.teacherProfile?.website || '');
   const [bio, setBio] = useState(user.teacherProfile?.bio || '');
   const [headline, setHeadline] = useState(user.teacherProfile?.headline || '');
-  const [sheetsDestination, setSheetsDestination] = useState(user.teacherProfile?.sheetsDestination || '');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -62,7 +61,6 @@ export const AdminEditTeacherModal: React.FC<AdminEditTeacherModalProps> = ({
           website: website.trim() || null,
           bio: bio.trim() || null,
           headline: headline.trim() || null,
-          sheetsDestination: sheetsDestination.trim() || null,
         }),
       });
       const data = await res.json();
@@ -143,13 +141,6 @@ export const AdminEditTeacherModal: React.FC<AdminEditTeacherModalProps> = ({
                 <label className="text-xs font-bold text-stone-300">نبذة (Bio)</label>
                 <textarea value={bio} onChange={(e) => setBio(e.target.value)} rows={3} maxLength={1000}
                   className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white focus:border-teal-500 outline-none resize-none" />
-              </div>
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-stone-300">رابط جدول Google Sheets (اختياري)</label>
-                <input value={sheetsDestination} onChange={(e) => setSheetsDestination(e.target.value)}
-                  placeholder="https://docs.google.com/spreadsheets/d/.../edit"
-                  className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white font-mono focus:border-teal-500 outline-none" />
-                <p className="text-[10px] text-stone-500">يُستخدم لتلقي طلبات الشراء مباشرة في جدول Google الخاص بالأستاذ.</p>
               </div>
             </>
           )}
