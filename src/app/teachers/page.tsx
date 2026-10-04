@@ -9,6 +9,7 @@ import { expandSubjectKeywords, expandLevelKeywords } from '@/lib/taxonomy';
 import { calculateBayesianScore } from '@/lib/ranking';
 
 // Dynamic real-time teachers directory
+export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 interface TeachersPageProps {

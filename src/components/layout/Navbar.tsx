@@ -94,8 +94,7 @@ export const Navbar = () => {
     await fetch('/api/auth/logout', { method: 'POST' });
     clearClientAuthCache();
     setCurrentUser(null);
-    router.push('/login');
-    router.refresh();
+    window.location.href = '/login';
   };
 
   // Canonical Global Top Navigation: الرئيسية | الأساتذة | المنتجات | عن PROF DZ

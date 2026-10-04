@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import Link from 'next/link';
 
+export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 export default async function LibraryPage() {

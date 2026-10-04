@@ -20,7 +20,10 @@ export async function getClientAuth(forceRefresh = false): Promise<{ authenticat
     return authPromise;
   }
 
-  authPromise = fetch('/api/auth/me')
+  authPromise = fetch('/api/auth/me', {
+    cache: 'no-store',
+    headers: { 'Cache-Control': 'no-cache, no-store' },
+  })
     .then((res) => {
       if (!res.ok) throw new Error('Auth network failed');
       return res.json();

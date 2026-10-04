@@ -16,6 +16,7 @@ import { ProfileVisitorsCard } from '@/components/dashboard/ProfileVisitorsCard'
 import { ProductVisitorsAnalytics } from '@/components/dashboard/ProductVisitorsAnalytics';
 import { OrdersManager } from '@/components/dashboard/OrdersManager';
 
+export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 export default async function TeacherDashboardPage() {

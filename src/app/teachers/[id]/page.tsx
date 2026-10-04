@@ -17,6 +17,7 @@ import AvatarFallback from '@/components/common/AvatarFallback';
 import { enrichProducts, isPublicProduct } from '@/lib/products';
 import { isPubliclyDiscoverable, findTeacherByIdOrSlug } from '@/lib/teacherVisibility';
 
+export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 export default async function TeacherProfilePage({ params }: { params: Promise<{ id: string }> }) {

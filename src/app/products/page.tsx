@@ -6,6 +6,7 @@ import { rankProducts } from '@/lib/productRanking';
 import { BookOpen } from 'lucide-react';
 
 // Dynamic real-time products catalog
+export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 export default async function ProductsCatalogPage() {

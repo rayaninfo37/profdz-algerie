@@ -13,6 +13,7 @@ import { ProductReviewSection } from '@/components/discovery/ProductReviewSectio
 import { enrichProduct, isPublicProduct } from '@/lib/products';
 import { ProductPageClient } from '@/components/products/ProductPageClient';
 
+export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 export default async function ProductDetailPage({ params }: { params: Promise<{ slug: string }> }) {

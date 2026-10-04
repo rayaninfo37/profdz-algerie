@@ -5,32 +5,41 @@ import { rateLimit } from '@/middleware/rateLimitMiddleware';
 
 export const dynamic = 'force-dynamic';
 
+const NO_CACHE_HEADERS = {
+  'Cache-Control': 'private, no-cache, no-store, max-age=0, must-revalidate',
+  Pragma: 'no-cache',
+  Expires: '0',
+};
+
 export async function GET(request: Request) {
   const limitRes = await rateLimit(request, 60, 60_000); // lenient for polling
   if (limitRes) return limitRes;
 
   const user = await getCurrentUser();
   if (!user) {
-    return NextResponse.json({ authenticated: false, user: null });
+    return NextResponse.json({ authenticated: false, user: null }, { headers: NO_CACHE_HEADERS });
   }
 
   // Blocked users (frozen / soft-deleted): return their state so UI can show message
   const isBlocked = (user as any)._blocked === true;
   if (isBlocked) {
-    return NextResponse.json({
-      authenticated: true,
-      blocked: true,
-      isFrozen: (user as any).isFrozen,
-      softDeleted: !!(user as any).softDeletedAt,
-      user: {
-        id: user.id,
-        fullName: user.fullName,
-        email: user.email,
-        role: user.role,
+    return NextResponse.json(
+      {
+        authenticated: true,
+        blocked: true,
         isFrozen: (user as any).isFrozen,
-        softDeletedAt: (user as any).softDeletedAt,
+        softDeleted: !!(user as any).softDeletedAt,
+        user: {
+          id: user.id,
+          fullName: user.fullName,
+          email: user.email,
+          role: user.role,
+          isFrozen: (user as any).isFrozen,
+          softDeletedAt: (user as any).softDeletedAt,
+        },
       },
-    });
+      { headers: NO_CACHE_HEADERS }
+    );
   }
 
   // Only compute expensive aggregate counts if explicitly requested by caller
@@ -49,12 +58,15 @@ export async function GET(request: Request) {
   }
 
   const safeUser = sanitizeUserForClient(user);
-  return NextResponse.json({
-    authenticated: true,
-    blocked: false,
-    user: {
-      ...safeUser,
-      stats,
+  return NextResponse.json(
+    {
+      authenticated: true,
+      blocked: false,
+      user: {
+        ...safeUser,
+        stats,
+      },
     },
-  });
+    { headers: NO_CACHE_HEADERS }
+  );
 }

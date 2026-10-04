@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 
 // Real-Time Dynamic Rendering: Always fresh, reflective of all platform updates
+export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 export default async function HomePage() {

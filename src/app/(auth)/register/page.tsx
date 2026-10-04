@@ -136,20 +136,21 @@ function RegisterForm() {
         const { setClientAuth } = await import('@/lib/clientAuth');
         setClientAuth(data.user);
 
+        let target = '/';
         switch (data.user.role) {
           case 'TEACHER':
-            router.push('/dashboard/teacher');
+            target = '/dashboard/teacher';
             break;
           case 'STUDENT':
-            router.push('/dashboard/student');
+            target = '/dashboard/student';
             break;
           case 'PARENT':
-            router.push('/dashboard/parent');
+            target = '/dashboard/parent';
             break;
           default:
-            router.push('/');
+            target = '/';
         }
-        router.refresh();
+        window.location.href = target;
       } else {
         setError(data.error || 'فشل في إنشاء الحساب. يرجى مراجعة البيانات المدخلة.');
       }
