@@ -13,28 +13,29 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 export default async function AboutKrytyPage() {
-  // Forcefully opt out of Netlify Durable CDN cache at the response level
-  headers(); // Calling headers() forces force-dynamic, prevents any static prerender
+  // Tell Netlify CDN to NEVER store this page — must be awaited to take effect
+  await headers();
+
+  // ALWAYS fallback to official PROF DZ YouTube video — never show a broken file
+  const OFFICIAL_YT_ID = '9ERQ4_v7B7c';
 
   const setting = await prisma.platformSetting.findUnique({
     where: { key: 'aboutPlatformVideoUrl' },
   });
   const customVideoUrl = setting?.value?.trim() || '';
 
-  // Extract YouTube ID if setting is a valid YouTube link or raw ID
-  let youtubeId = extractYouTubeId(customVideoUrl);
+  // Extract YouTube ID from DB value if it's a YouTube URL
+  const extractedId = extractYouTubeId(customVideoUrl);
 
-  // If not YouTube, only treat as local video if it's a known valid local media path and NOT an uploaded corrupted file
+  // Use extracted ID if valid, otherwise unconditionally use official video
+  const youtubeId = extractedId || KRYTY_ASSETS.about.officialYouTubeId || OFFICIAL_YT_ID;
+
+  // Local video only if path is explicitly /media/ (never /uploads/ which may be corrupt)
   const isLocalVideo =
     !youtubeId &&
     customVideoUrl &&
     customVideoUrl.startsWith('/media/') &&
     /\.(mp4|webm)$/i.test(customVideoUrl);
-
-  // If no valid YouTube ID or local video, fallback to official platform YouTube video (9ERQ4_v7B7c)
-  if (!youtubeId && !isLocalVideo) {
-    youtubeId = KRYTY_ASSETS.about.officialYouTubeId || '9ERQ4_v7B7c';
-  }
 
   const corePillars = [
     {
