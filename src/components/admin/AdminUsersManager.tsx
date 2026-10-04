@@ -49,6 +49,8 @@ export const AdminUsersManager: React.FC<AdminUsersManagerProps> = ({
   const [statusFilter, setStatusFilter] = useState(initialFilterStatus);
   const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
   const [confirmDeleteUser, setConfirmDeleteUser] = useState<UserRecord | null>(null);
+  const [confirmFreezeUser, setConfirmFreezeUser] = useState<UserRecord | null>(null);
+  const [confirmHardDeleteUser, setConfirmHardDeleteUser] = useState<UserRecord | null>(null);
   const [editingUser, setEditingUser] = useState<UserRecord | null>(null);
   const [subscriptionDaysInput, setSubscriptionDaysInput] = useState<Record<string, string>>({});
   const [showSubInput, setShowSubInput] = useState<string | null>(null);
@@ -276,9 +278,7 @@ export const AdminUsersManager: React.FC<AdminUsersManagerProps> = ({
                               </button>
                             ) : (
                               <button
-                                onClick={() => {
-                                  if (window.confirm(`هل تريد تجميد حساب ${u.fullName}؟`)) patchAction(u.id, 'FREEZE');
-                                }}
+                                onClick={() => setConfirmFreezeUser(u)}
                                 disabled={!!isLoading}
                                 className="px-2 py-1 rounded-lg text-[10px] font-bold bg-orange-950 border border-orange-700/50 text-orange-300 hover:bg-orange-900 disabled:opacity-50 flex items-center gap-1"
                               >
@@ -343,9 +343,7 @@ export const AdminUsersManager: React.FC<AdminUsersManagerProps> = ({
                             </button>
                           ) : gracePassed ? (
                             <button
-                              onClick={() => {
-                                if (window.confirm(`الحذف النهائي لـ ${u.fullName}؟ لا يمكن التراجع.`)) handleDeleteConfirmed(u);
-                              }}
+                              onClick={() => setConfirmHardDeleteUser(u)}
                               disabled={!!isLoading}
                               className="px-2 py-1 rounded-lg text-[10px] font-bold bg-red-900 border border-red-600/50 text-red-200 hover:bg-red-800 disabled:opacity-50 flex items-center gap-1"
                             >
@@ -401,6 +399,70 @@ export const AdminUsersManager: React.FC<AdminUsersManagerProps> = ({
           onClose={() => setEditingUser(null)}
           onSuccess={fetchUsers}
         />
+      )}
+
+      {/* Freeze Confirm Modal */}
+      {confirmFreezeUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <div className="clean-card w-full max-w-md p-6 space-y-4 bg-[#111D38] border border-orange-800 text-stone-100 shadow-2xl rounded-2xl">
+            <h3 className="text-base font-bold text-white flex items-center gap-2 border-b border-slate-800 pb-3">
+              <Lock className="w-5 h-5 text-orange-400" />
+              تجميد الحساب
+            </h3>
+            <p className="text-xs text-stone-300 leading-relaxed">
+              سيُجمَّد حساب <strong className="text-white">{confirmFreezeUser.fullName}</strong> فوراً ولن يتمكن من الدخول للمنصة حتى يتم رفع التجميد يدوياً.
+            </p>
+            <div className="flex items-center justify-end gap-2 pt-2">
+              <Button type="button" variant="outline" size="sm"
+                disabled={!!actionLoadingId}
+                onClick={() => setConfirmFreezeUser(null)}
+                className="border-slate-700 text-stone-300">
+                إلغاء
+              </Button>
+              <Button type="button" variant="primary" size="sm"
+                isLoading={actionLoadingId === confirmFreezeUser.id + ':FREEZE'}
+                onClick={() => {
+                  patchAction(confirmFreezeUser.id, 'FREEZE');
+                  setConfirmFreezeUser(null);
+                }}
+                className="bg-orange-600 hover:bg-orange-700 text-white font-bold">
+                تجميد الحساب
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Hard Delete Confirm Modal */}
+      {confirmHardDeleteUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <div className="clean-card w-full max-w-md p-6 space-y-4 bg-[#111D38] border border-red-800 text-stone-100 shadow-2xl rounded-2xl">
+            <h3 className="text-base font-bold text-white flex items-center gap-2 border-b border-slate-800 pb-3">
+              <AlertTriangle className="w-5 h-5 text-red-400" />
+              ⚠️ حذف نهائي — لا يمكن التراجع
+            </h3>
+            <p className="text-xs text-stone-300 leading-relaxed">
+              سيُحذف حساب <strong className="text-white">{confirmHardDeleteUser.fullName}</strong> بشكل نهائي وكامل من قاعدة البيانات. هذا الإجراء <strong className="text-red-400">غير قابل للتراجع</strong> تحت أي ظرف.
+            </p>
+            <div className="flex items-center justify-end gap-2 pt-2">
+              <Button type="button" variant="outline" size="sm"
+                disabled={!!actionLoadingId}
+                onClick={() => setConfirmHardDeleteUser(null)}
+                className="border-slate-700 text-stone-300">
+                إلغاء
+              </Button>
+              <Button type="button" variant="primary" size="sm"
+                isLoading={actionLoadingId === confirmHardDeleteUser.id + ':delete'}
+                onClick={() => {
+                  handleDeleteConfirmed(confirmHardDeleteUser);
+                  setConfirmHardDeleteUser(null);
+                }}
+                className="bg-red-700 hover:bg-red-800 text-white font-bold">
+                حذف نهائي
+              </Button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
 
