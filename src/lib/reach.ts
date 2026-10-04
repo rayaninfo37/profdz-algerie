@@ -7,20 +7,43 @@ export async function getPlatformTrialDuration(): Promise<number> {
   return settings.TRIAL_DURATION_DAYS;
 }
 
+const recordedReachCache = new Set<string>();
+
 export async function recordProfileView(teacherId: string, viewerUserId?: string | null) {
   if (!viewerUserId || !teacherId) return;
 
+  const cacheKey = `${teacherId}:${viewerUserId}`;
+  if (recordedReachCache.has(cacheKey)) {
+    return;
+  }
+
+  // Claim in-memory slot immediately to block concurrent duplicate requests
+  recordedReachCache.add(cacheKey);
+  if (recordedReachCache.size > 20000) {
+    recordedReachCache.clear();
+  }
+
   const teacher = await prisma.teacherProfile.findUnique({
     where: { id: teacherId },
-    select: { id: true, userId: true, subscriptionState: true },
+    select: { id: true, userId: true },
   });
 
-  if (!teacher) return;
-  // Ignore self-views by the teacher on their own profile
-  if (teacher.userId === viewerUserId) return;
+  if (!teacher || teacher.userId === viewerUserId) return;
+
+  // Non-exception existence check via unique index
+  const existing = await prisma.reachEvent.findUnique({
+    where: {
+      teacherId_viewerUserId: {
+        teacherId,
+        viewerUserId,
+      },
+    },
+    select: { id: true },
+  });
+
+  if (existing) return;
 
   try {
-    // Record unique reach event (1 per registered viewer) for analytics
     await prisma.reachEvent.create({
       data: {
         teacherId,
@@ -28,7 +51,7 @@ export async function recordProfileView(teacherId: string, viewerUserId?: string
       },
     });
   } catch (error: any) {
-    // P2002 means already viewed by this user, ignore
+    // Race-condition fallback
   }
 }
 

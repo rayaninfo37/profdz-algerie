@@ -355,7 +355,7 @@ export const ProfileEditorModal: React.FC<ProfileEditorModalProps> = ({
               </div>
             )}
 
-            <div className="flex justify-end gap-2 pt-3 border-t border-slate-800">
+            <div className="sticky bottom-0 bg-[#111D38]/95 backdrop-blur-md px-4 py-3 border-t border-slate-800 flex justify-end gap-2 -mx-4 -mb-4 mt-4 z-10 shadow-lg">
               <Button variant="outline" size="sm" type="button" onClick={onClose} className="border-slate-700 text-stone-300">
                 إلغاء
               </Button>
@@ -642,7 +642,7 @@ export const ProfileEditorModal: React.FC<ProfileEditorModalProps> = ({
               </p>
             </div>
 
-            <div className="flex justify-end gap-2 pt-3 border-t border-slate-800">
+            <div className="sticky bottom-0 bg-[#111D38]/95 backdrop-blur-md px-4 py-3 border-t border-slate-800 flex justify-end gap-2 -mx-4 -mb-4 mt-4 z-10 shadow-lg">
               <Button variant="outline" size="sm" type="button" onClick={onClose} className="border-slate-700 text-stone-300">
                 إلغاء
               </Button>

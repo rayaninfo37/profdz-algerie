@@ -74,13 +74,13 @@ export default function LoginPage() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-1.5">
-            <label className="text-xs font-bold text-slate-300 block">البريد الإلكتروني (Email)</label>
+            <label className="text-xs font-bold text-slate-300 block">البريد الإلكتروني أو رقم الهاتف (Email or Phone)</label>
             <input
-              type="email"
+              type="text"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="example@profdz.dz"
+              placeholder="example@profdz.dz أو 0555123456"
               className="w-full px-4 py-2.5 bg-slate-900 border border-white/10 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400 focus:bg-slate-900 transition-all shadow-inner"
             />
           </div>

@@ -153,7 +153,8 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="نشر منشور أو إرشاد تعليمي جديد (Create Educational Post)">
-      <form onSubmit={handleSubmit} className="space-y-4 text-stone-100" dir="rtl">
+      <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0" dir="rtl">
+        <div className="overflow-y-auto flex-1 min-h-0 px-1 space-y-4 text-stone-100 pb-2">
         {error && (
           <div className="p-3 bg-rose-950/80 border border-rose-800 text-rose-300 text-xs rounded-xl font-bold">
             {error}
@@ -315,8 +316,9 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
             </div>
           )}
         </div>
+        </div>
 
-        <div className="flex justify-end gap-2 pt-2 border-t border-slate-800">
+        <div className="shrink-0 flex justify-end gap-2 pt-3 mt-2 border-t border-slate-800/80 bg-slate-950/95 sticky bottom-0 z-10 py-1">
           <Button variant="outline" size="sm" type="button" onClick={onClose} className="border-slate-700 text-stone-300">
             إلغاء
           </Button>

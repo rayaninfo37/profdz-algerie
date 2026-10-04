@@ -171,17 +171,17 @@ export const CreateProductModal: React.FC<CreateProductModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-      <div className="bg-[#0D1527] border border-[#1E3A5F] rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl">
-        <div className="sticky top-0 bg-[#0D1527] border-b border-[#1E3A5F] px-6 py-4 flex items-center justify-between z-10">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 md:p-6 bg-black/80 backdrop-blur-sm animate-fadeIn">
+      <div className="bg-[#0D1527] border border-[#1E3A5F] rounded-2xl w-full max-w-2xl max-h-[92vh] flex flex-col shadow-2xl overflow-hidden" dir="rtl">
+        <div className="shrink-0 bg-[#0D1527] border-b border-[#1E3A5F] px-5 sm:px-6 py-4 flex items-center justify-between z-10">
           <h2 className="text-base font-bold text-white flex items-center gap-2">
             <BookOpen className="w-5 h-5 text-teal-400" />
             إضافة منتج تعليمي جديد
           </h2>
-          <button onClick={onClose} className="text-slate-400 hover:text-white text-xl leading-none">×</button>
+          <button onClick={onClose} className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors text-xl leading-none" aria-label="إغلاق">×</button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-5" dir="rtl">
+        <form onSubmit={handleSubmit} className="overflow-y-auto px-5 sm:px-6 py-4 space-y-5 flex-1 min-h-0 overscroll-contain">
           {error && (
             <div className="p-3 bg-rose-950/80 border border-rose-800 text-rose-300 text-xs rounded-xl font-bold flex items-center gap-2">
               <AlertCircle className="w-4 h-4 shrink-0" /> {error}
@@ -377,8 +377,8 @@ export const CreateProductModal: React.FC<CreateProductModalProps> = ({
             />
           </div>
 
-          {/* Submit */}
-          <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-800">
+          {/* Submit - Sticky Footer */}
+          <div className="sticky bottom-0 bg-[#0D1527]/95 backdrop-blur-md px-5 sm:px-6 py-3 border-t border-[#1E3A5F] flex items-center justify-end gap-3 z-10 -mx-5 sm:-mx-6 -mb-4 mt-4 shadow-lg">
             <Button variant="outline" size="sm" type="button" onClick={onClose} disabled={loading}
               className="border-slate-700 text-stone-300">
               إلغاء

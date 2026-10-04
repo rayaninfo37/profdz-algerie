@@ -17,7 +17,6 @@ interface TeacherEditData {
     website?: string | null;
     bio?: string | null;
     headline?: string | null;
-    sheetsDestination?: string | null;
   } | null;
 }
 
@@ -79,14 +78,14 @@ export const AdminEditTeacherModal: React.FC<AdminEditTeacherModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-      <div className="bg-[#111D38] border border-[#1E3A5F] rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl text-stone-100" dir="rtl">
-        <div className="sticky top-0 bg-[#111D38] border-b border-slate-800 px-5 py-4 flex items-center justify-between z-10">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 md:p-6 bg-black/80 backdrop-blur-sm animate-fadeIn">
+      <div className="bg-[#111D38] border border-[#1E3A5F] rounded-2xl w-full max-w-lg max-h-[92vh] flex flex-col shadow-2xl text-stone-100 overflow-hidden" dir="rtl">
+        <div className="shrink-0 bg-[#111D38] border-b border-slate-800 px-5 py-4 flex items-center justify-between z-10">
           <h3 className="font-bold text-white text-sm">تعديل بيانات: {user.fullName}</h3>
-          <button onClick={onClose} className="text-slate-400 hover:text-white"><X className="w-5 h-5" /></button>
+          <button onClick={onClose} className="p-1 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors" aria-label="إغلاق"><X className="w-5 h-5" /></button>
         </div>
 
-        <form onSubmit={handleSave} className="p-5 space-y-4">
+        <form onSubmit={handleSave} className="overflow-y-auto px-5 py-4 space-y-4 flex-1 min-h-0 overscroll-contain">
           {error && (
             <div className="p-3 bg-rose-950 border border-rose-800 text-rose-300 text-xs rounded-xl flex gap-2">
               <AlertCircle className="w-4 h-4 shrink-0" /> {error}
@@ -145,7 +144,7 @@ export const AdminEditTeacherModal: React.FC<AdminEditTeacherModalProps> = ({
             </>
           )}
 
-          <div className="flex justify-end gap-2 pt-3 border-t border-slate-800">
+          <div className="sticky bottom-0 bg-[#111D38]/95 backdrop-blur-md px-5 py-3 border-t border-slate-800 flex justify-end gap-2 -mx-5 -mb-4 mt-4 shadow-lg">
             <Button type="button" variant="outline" size="sm" onClick={onClose} disabled={loading}
               className="border-slate-700 text-stone-300">إلغاء</Button>
             <Button type="submit" variant="primary" size="sm" isLoading={loading}

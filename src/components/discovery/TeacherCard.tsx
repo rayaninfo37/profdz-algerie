@@ -117,6 +117,14 @@ export const TeacherCard: React.FC<TeacherCardProps> = ({
 
   const handleSubmitReview = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!reviewComment.trim() || reviewComment.trim().length < 5) {
+      toast.error('كتابة تعليق توضيحي إلزامية (5 أحرف على الأقل).');
+      return;
+    }
+    if (rating <= 2 && reviewComment.trim().length < 20) {
+      toast.error('التقييمات المنخفضة (نجمة أو نجمتان) تتطلب شرحاً لا يقل عن 20 حرفاً لمساعدة الأستاذ على التحسين.');
+      return;
+    }
     setIsSubmittingReview(true);
     try {
       const res = await fetch('/api/reviews', {
@@ -392,12 +400,15 @@ export const TeacherCard: React.FC<TeacherCardProps> = ({
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-300 mb-1">تعليقك (اختياري)</label>
+            <label className="block text-xs font-bold text-slate-300 mb-1">
+              تعليقك وملاحظاتك (إلزامي - 5 أحرف على الأقل) *
+            </label>
             <textarea
               value={reviewComment}
               onChange={(e) => setReviewComment(e.target.value)}
               rows={3}
-              placeholder="اكتب تجربتك مع الأستاذ بموضوعية..."
+              required
+              placeholder={rating <= 2 ? "يرجى كتابة شرح بناء لا يقل عن 20 حرفاً لمساعدة الأستاذ..." : "اكتب تجربتك مع الأستاذ بموضوعية (5 أحرف على الأقل)..."}
               className="w-full text-xs p-3 rounded-xl bg-slate-900 border border-white/10 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 text-white placeholder-slate-500 resize-none outline-none"
             />
           </div>

@@ -155,7 +155,7 @@ export async function PUT(
     }
 
     const body = await request.json();
-    const { title, description, priceDZD, isFree, subject, educationLevel, productType, coverImage, previewContent, isPublished, youtubeUrl, educationTargets, purchaseFormSchema, sheetsWebhookUrl } = body;
+    const { title, description, priceDZD, isFree, subject, educationLevel, productType, coverImage, previewContent, isPublished, youtubeUrl, educationTargets, purchaseFormSchema } = body;
 
     // Text limit validation
     const { KRYTY_CONFIG: cfg } = await import('@/lib/config');
@@ -210,21 +210,6 @@ export async function PUT(
       } catch { /* ignore invalid JSON */ }
     }
 
-    // Google Sheets URL validation (Supports regular docs.google.com URLs & legacy scripts)
-    let validatedSheetsWebhookUrl: string | null | undefined = undefined;
-    if (sheetsWebhookUrl !== undefined) {
-      if (!sheetsWebhookUrl || !String(sheetsWebhookUrl).trim()) {
-        validatedSheetsWebhookUrl = null;
-      } else {
-        const { validateGoogleSheetUrl } = await import('@/lib/googleSheets');
-        const sheetVal = validateGoogleSheetUrl(sheetsWebhookUrl);
-        if (!sheetVal.isValid) {
-          return NextResponse.json({ error: sheetVal.error || 'رابط Google Sheet غير صالح.' }, { status: 400 });
-        }
-        validatedSheetsWebhookUrl = sheetVal.canonicalUrl || String(sheetsWebhookUrl).trim();
-      }
-    }
-
     const updatedProduct = await prisma.product.update({
       where: { id },
       data: {
@@ -243,7 +228,6 @@ export async function PUT(
         ...(isPublished !== undefined ? { isPublished: Boolean(isPublished) } : {}),
         ...(storedYoutubeId !== undefined ? { youtubeUrl: storedYoutubeId } : {}),
         ...(purchaseFormSchemaStr !== undefined ? { purchaseFormSchema: purchaseFormSchemaStr } : {}),
-        ...(validatedSheetsWebhookUrl !== undefined ? { sheetsWebhookUrl: validatedSheetsWebhookUrl } : {}),
       },
     });
 

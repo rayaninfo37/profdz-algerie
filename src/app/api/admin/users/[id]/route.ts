@@ -75,16 +75,6 @@ export async function PATCH(
       }
       if (body.bio !== undefined) teacherUpdates.bio = body.bio ? String(body.bio).trim().substring(0, 1000) : null;
       if (body.headline !== undefined) teacherUpdates.headline = body.headline ? String(body.headline).trim().substring(0, 200) : null;
-      if (body.sheetsDestination !== undefined) {
-        const sd = String(body.sheetsDestination || '').trim();
-        if (!sd) {
-          teacherUpdates.sheetsDestination = null;
-        } else {
-          const { validateGoogleSheetUrl } = await import('@/lib/googleSheets');
-          const val = validateGoogleSheetUrl(sd);
-          teacherUpdates.sheetsDestination = val.isValid ? (val.canonicalUrl || sd) : sd;
-        }
-      }
     }
 
     // Apply updates

@@ -3,6 +3,8 @@ import { getCurrentUser } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { validateAlgerianPhone } from '@/lib/algerianPhone';
 import { rateLimit } from '@/middleware/rateLimitMiddleware';
+import { revalidatePath } from 'next/cache';
+import { invalidateRankingCache } from '@/lib/ranking';
 
 export async function POST(request: Request) {
   const limitRes = await rateLimit(request, 5, 60_000);
@@ -49,7 +51,7 @@ export async function POST(request: Request) {
         where: { id: user.id },
         data: {
           phone: normalized,
-          isPhoneVerified: false,
+          isPhoneVerified: true,
         },
       });
 
@@ -75,9 +77,14 @@ export async function POST(request: Request) {
       });
     });
 
+    // Invalidate caches so new phone is reflected across public listings
+    invalidateRankingCache();
+    revalidatePath('/teachers');
+    revalidatePath('/');
+
     return NextResponse.json({
       success: true,
-      message: 'تم تغيير رقم الهاتف. يرجى التحقق من الرقم الجديد.',
+      message: 'تم تحديث رقم الهاتف بنجاح.',
     });
   } catch (error: any) {
     console.error('[CHANGE_PHONE] Error:', error?.message);

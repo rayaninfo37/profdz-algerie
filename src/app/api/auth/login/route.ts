@@ -5,28 +5,47 @@ import { UserRole } from '@/types';
 import { rateLimit } from '@/middleware/rateLimitMiddleware';
 import { logAnalyticsEvent } from '@/lib/analytics';
 
+import { validateAlgerianPhone } from '@/lib/algerianPhone';
+
 export async function POST(request: Request) {
   const limitRes = await rateLimit(request, 10, 60_000);
   if (limitRes) return limitRes;
   try {
-    const { email, password } = await request.json();
+    const body = await request.json().catch(() => ({}));
+    const rawIdentifier = (body.email || body.phone || body.identifier || '').trim();
+    const password = body.password;
 
-    if (!email || !password) {
-      return NextResponse.json({ error: 'Email and password are required' }, { status: 400 });
+    if (!rawIdentifier || !password) {
+      return NextResponse.json({ error: 'البريد الإلكتروني أو رقم الهاتف وكلمة المرور مطلوبة.' }, { status: 400 });
     }
 
-    const user = await prisma.user.findUnique({
-      where: { email: email.toLowerCase().trim() },
-      include: {
-        teacherProfile: true,
-        studentProfile: true,
-        parentProfile: true,
-        institutionProfile: true,
-      },
-    });
+    let user = null;
+    if (rawIdentifier.includes('@')) {
+      user = await prisma.user.findUnique({
+        where: { email: rawIdentifier.toLowerCase() },
+        include: {
+          teacherProfile: true,
+          studentProfile: true,
+          parentProfile: true,
+          institutionProfile: true,
+        },
+      });
+    } else {
+      const phoneVal = validateAlgerianPhone(rawIdentifier, false);
+      const searchPhone = phoneVal.isValid ? phoneVal.normalizedPhone : rawIdentifier;
+      user = await prisma.user.findFirst({
+        where: { phone: searchPhone },
+        include: {
+          teacherProfile: true,
+          studentProfile: true,
+          parentProfile: true,
+          institutionProfile: true,
+        },
+      });
+    }
 
     if (!user) {
-      return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 });
+      return NextResponse.json({ error: 'بيانات الدخول غير صحيحة.' }, { status: 401 });
     }
 
     // Check soft-deleted

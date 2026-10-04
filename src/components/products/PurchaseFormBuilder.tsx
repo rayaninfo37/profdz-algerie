@@ -4,7 +4,6 @@ import React, { useState, useCallback } from 'react';
 import { Plus, Trash2, GripVertical, Save, X, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { useToast } from '@/context/ToastContext';
-import { validateGoogleSheetUrl } from '@/lib/googleSheets';
 
 export interface FormField {
   id: string;
@@ -40,7 +39,6 @@ const PRESETS = [
 interface PurchaseFormBuilderProps {
   productId: string;
   initialSchema?: string; // JSON string
-  sheetsWebhookUrl?: string;
   onSaved?: () => void;
 }
 
@@ -58,7 +56,6 @@ function newField(): FormField {
 export const PurchaseFormBuilder: React.FC<PurchaseFormBuilderProps> = ({
   productId,
   initialSchema,
-  sheetsWebhookUrl: initialWebhook,
   onSaved,
 }) => {
   const toast = useToast();
@@ -70,7 +67,6 @@ export const PurchaseFormBuilder: React.FC<PurchaseFormBuilderProps> = ({
       return [];
     }
   });
-  const [webhook, setWebhook] = useState(initialWebhook || '');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [dragging, setDragging] = useState<string | null>(null);
@@ -138,15 +134,6 @@ export const PurchaseFormBuilder: React.FC<PurchaseFormBuilderProps> = ({
       }
     }
 
-    // Validate Google Sheet URL
-    if (webhook.trim()) {
-      const sheetVal = validateGoogleSheetUrl(webhook.trim());
-      if (!sheetVal.isValid) {
-        setError(sheetVal.error || 'رابط Google Sheet غير صالح.');
-        return;
-      }
-    }
-
     setSaving(true);
     try {
       // Normalize select options to arrays for storage
@@ -164,7 +151,6 @@ export const PurchaseFormBuilder: React.FC<PurchaseFormBuilderProps> = ({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           purchaseFormSchema: JSON.stringify(cleanFields),
-          sheetsWebhookUrl: webhook.trim() || null,
         }),
       });
       const data = await res.json();
@@ -277,20 +263,6 @@ export const PurchaseFormBuilder: React.FC<PurchaseFormBuilderProps> = ({
             </div>
           </div>
         )}
-      </div>
-
-      {/* Google Sheets Destination */}
-      <div className="space-y-1.5 pt-3 border-t border-slate-800">
-        <label className="text-xs font-bold text-stone-300">رابط جدول Google Sheets الخاص بهذا المنتج (اختياري)</label>
-        <input
-          value={webhook}
-          onChange={(e) => setWebhook(e.target.value)}
-          placeholder="https://docs.google.com/spreadsheets/d/.../edit"
-          className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white font-mono focus:border-teal-500 outline-none"
-        />
-        <p className="text-[10px] text-stone-500">
-          الصق رابط Google Sheet الخاص بك مباشرة. سيتكفل النظام بإضافة صفوف الطلبات تلقائياً دون أي إعداد تقني.
-        </p>
       </div>
 
       <div className="flex justify-end pt-2">
