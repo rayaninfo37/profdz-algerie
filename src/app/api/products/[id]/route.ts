@@ -231,10 +231,12 @@ export async function PUT(
       },
     });
 
-    // Invalidate ranking snapshot and ISR page caches
+    // Invalidate product cache, ranking snapshot and ISR page caches
     const { invalidateRankingCache } = await import('@/lib/ranking');
+    const { invalidateProductCache } = await import('@/lib/products');
     const { revalidatePath } = await import('next/cache');
     invalidateRankingCache();
+    invalidateProductCache();
     revalidatePath('/products');
     revalidatePath('/');
     revalidatePath('/dashboard/teacher');
@@ -315,8 +317,10 @@ export async function DELETE(
     });
 
     const { invalidateRankingCache } = await import('@/lib/ranking');
+    const { invalidateProductCache } = await import('@/lib/products');
     const { revalidatePath } = await import('next/cache');
     invalidateRankingCache();
+    invalidateProductCache();
     revalidatePath('/products');
     revalidatePath('/');
     revalidatePath('/dashboard/teacher');

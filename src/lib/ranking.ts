@@ -80,90 +80,104 @@ export function rankTeachers<T extends TeacherRankingInput>(
 
 // In-Memory Real-Time Ranking Snapshot Cache (5 seconds TTL for instant dynamic updates)
 let cachedRankingSnapshot: { data: any[]; timestamp: number } | null = null;
+let rankingPromise: Promise<any[]> | null = null;
 const RANKING_CACHE_TTL_MS = 5 * 1000; // 5 seconds
 
-export async function getAllRankedTeachersCached() {
+export async function getAllRankedTeachersCached(): Promise<any[]> {
   const now = Date.now();
-  if (cachedRankingSnapshot && (now - cachedRankingSnapshot.timestamp < RANKING_CACHE_TTL_MS)) {
+  if (cachedRankingSnapshot && now - cachedRankingSnapshot.timestamp < RANKING_CACHE_TTL_MS) {
     return cachedRankingSnapshot.data;
   }
 
-  const { prisma } = await import('@/lib/db');
+  if (rankingPromise) {
+    return rankingPromise;
+  }
 
-  // Query all eligible public teachers
-  const candidates = await prisma.teacherProfile.findMany({
-    where: {
-      subscriptionState: {
-        in: ['FREE_ACTIVE', 'PRO_ACTIVE'],
-      },
-      // Exclude frozen and soft-deleted accounts from all discovery surfaces
-      user: {
-        isFrozen: false,
-        softDeletedAt: null,
-      },
-    },
-    select: {
-      id: true,
-      userId: true,
-      headline: true,
-      bio: true,
-      subjects: true,
-      educationLevels: true,
-      teachingMode: true,
-      experienceYears: true,
-      isVerified: true,
-      professionalTitle: true,
-      subscriptionState: true,
-      ratingAverage: true,
-      reviewCount: true,
-      priceMin: true,
-      priceMax: true,
-      phone: true,
-      whatsapp: true,
-      telegram: true,
-      facebook: true,
-      user: {
+  rankingPromise = (async () => {
+    try {
+      const { prisma } = await import('@/lib/db');
+
+      // Query all eligible public teachers
+      const candidates = await prisma.teacherProfile.findMany({
+        where: {
+          subscriptionState: {
+            in: ['FREE_ACTIVE', 'PRO_ACTIVE'],
+          },
+          // Exclude frozen and soft-deleted accounts from all discovery surfaces
+          user: {
+            isFrozen: false,
+            softDeletedAt: null,
+          },
+        },
         select: {
           id: true,
-          fullName: true,
-          avatarUrl: true,
-          wilaya: true,
+          userId: true,
+          headline: true,
+          bio: true,
+          subjects: true,
+          educationLevels: true,
+          teachingMode: true,
+          experienceYears: true,
+          isVerified: true,
+          professionalTitle: true,
+          subscriptionState: true,
+          ratingAverage: true,
+          reviewCount: true,
+          priceMin: true,
+          priceMax: true,
+          phone: true,
+          whatsapp: true,
+          telegram: true,
+          facebook: true,
+          user: {
+            select: {
+              id: true,
+              fullName: true,
+              avatarUrl: true,
+              wilaya: true,
+            },
+          },
+          reviews: {
+            where: { status: 'PUBLISHED' },
+            select: { rating: true },
+          },
+          _count: {
+            select: { reviews: true, reachEvents: true },
+          },
         },
-      },
-      reviews: {
-        where: { status: 'PUBLISHED' },
-        select: { rating: true },
-      },
-      _count: {
-        select: { reviews: true, reachEvents: true },
-      },
-    },
-  });
+      });
 
-  const formattedInputs = candidates.map((t) => {
-    const publishedReviews = t.reviews || [];
-    const count = publishedReviews.length;
-    const avg = count > 0 ? publishedReviews.reduce((acc, r) => acc + r.rating, 0) / count : 0;
+      const formattedInputs = candidates.map((t) => {
+        const publishedReviews = t.reviews || [];
+        const count = publishedReviews.length;
+        const avg = count > 0 ? publishedReviews.reduce((acc, r) => acc + r.rating, 0) / count : 0;
 
-    return {
-      ...t,
-      rawRating: Math.round(avg * 10) / 10,
-      reviewCount: count,
-      isVerified: t.isVerified,
-    };
-  });
+        return {
+          ...t,
+          rawRating: Math.round(avg * 10) / 10,
+          reviewCount: count,
+          isVerified: t.isVerified,
+        };
+      });
 
-  const ranked = rankTeachers(formattedInputs);
-  cachedRankingSnapshot = {
-    data: ranked,
-    timestamp: now,
-  };
+      const ranked = rankTeachers(formattedInputs);
+      cachedRankingSnapshot = {
+        data: ranked,
+        timestamp: Date.now(),
+      };
 
-  return ranked;
+      return ranked;
+    } finally {
+      rankingPromise = null;
+    }
+  })();
+
+  return rankingPromise;
 }
 
 export function invalidateRankingCache() {
   cachedRankingSnapshot = null;
+  rankingPromise = null;
 }
 
 export async function rankTeachersQuery<T extends TeacherRankingInput>(

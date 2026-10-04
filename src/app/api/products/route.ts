@@ -351,10 +351,13 @@ export async function POST(request: Request) {
       });
     });
 
-    // Invalidate ISR cache for products catalog
+    // Invalidate product cache & ISR cache for products catalog
+    const { invalidateProductCache } = await import('@/lib/products');
     const { revalidatePath } = await import('next/cache');
+    invalidateProductCache();
     revalidatePath('/products');
     revalidatePath('/');
+    revalidatePath('/dashboard/teacher');
 
     return NextResponse.json({ success: true, product });
   } catch (error: any) {

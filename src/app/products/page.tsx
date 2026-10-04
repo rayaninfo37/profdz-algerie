@@ -1,8 +1,6 @@
 import React from 'react';
-import { prisma } from '@/lib/db';
 import { ProductCard } from '@/components/discovery/ProductCard';
-import { enrichProducts, isPublicProduct } from '@/lib/products';
-import { rankProducts } from '@/lib/productRanking';
+import { getPublicRankedProductsCached } from '@/lib/products';
 import { BookOpen } from 'lucide-react';
 
 // Dynamic real-time products catalog
@@ -10,37 +8,7 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 export default async function ProductsCatalogPage() {
-  const where: any = { isPublished: true };
-
-  const rawProducts = await prisma.product.findMany({
-    where,
-    orderBy: { createdAt: 'desc' },
-    take: 60,
-    select: {
-      id: true,
-      creatorId: true,
-      creatorName: true,
-      creatorType: true,
-      title: true,
-      slug: true,
-      description: true,
-      coverImage: true,
-      productType: true,
-      subject: true,
-      educationLevel: true,
-      priceDZD: true,
-      isFree: true,
-      previewContent: true,
-      isPublished: true,
-      createdAt: true,
-      updatedAt: true,
-    },
-  });
-
-  const allEnriched = await enrichProducts(rawProducts);
-  const eligibleProducts = allEnriched.filter(isPublicProduct);
-  const ranked = rankProducts(eligibleProducts);
-  const products = ranked.map((r) => r.product);
+  const products = await getPublicRankedProductsCached(60);
 
   return (
     <div className="max-w-7xl mx-auto space-y-10 text-white" dir="rtl">

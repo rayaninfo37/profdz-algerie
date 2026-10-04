@@ -244,3 +244,73 @@ export function isPublicProduct(product: {
   return true;
 }
 
+// In-Memory Real-Time Product Catalog Snapshot Cache (5 seconds TTL)
+let cachedProductsSnapshot: { data: any[]; timestamp: number } | null = null;
+let productsPromise: Promise<any[]> | null = null;
+const PRODUCTS_CACHE_TTL_MS = 5 * 1000;
+
+export async function getPublicRankedProductsCached(limit = 60): Promise<any[]> {
+  const now = Date.now();
+  if (cachedProductsSnapshot && now - cachedProductsSnapshot.timestamp < PRODUCTS_CACHE_TTL_MS) {
+    return cachedProductsSnapshot.data.slice(0, limit);
+  }
+
+  if (productsPromise) {
+    const all = await productsPromise;
+    return all.slice(0, limit);
+  }
+
+  productsPromise = (async () => {
+    try {
+      const { rankProducts } = await import('@/lib/productRanking');
+
+      const rawProducts = await prisma.product.findMany({
+        where: { isPublished: true },
+        orderBy: { createdAt: 'desc' },
+        take: 60,
+        select: {
+          id: true,
+          creatorId: true,
+          creatorName: true,
+          creatorType: true,
+          title: true,
+          slug: true,
+          description: true,
+          coverImage: true,
+          productType: true,
+          subject: true,
+          educationLevel: true,
+          priceDZD: true,
+          isFree: true,
+          previewContent: true,
+          isPublished: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      });
+
+      const allEnriched = await enrichProducts(rawProducts);
+      const eligibleProducts = allEnriched.filter(isPublicProduct);
+      const ranked = rankProducts(eligibleProducts);
+      const products = ranked.map((r) => r.product);
+
+      cachedProductsSnapshot = {
+        data: products,
+        timestamp: Date.now(),
+      };
+
+      return products;
+    } finally {
+      productsPromise = null;
+    }
+  })();
+
+  const all = await productsPromise;
+  return all.slice(0, limit);
+}
+
+export function invalidateProductCache(): void {
+  cachedProductsSnapshot = null;
+  productsPromise = null;
+}
+

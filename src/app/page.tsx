@@ -1,13 +1,11 @@
 import React, { Suspense } from 'react';
 import Link from 'next/link';
-import { prisma } from '@/lib/db';
 import { TeacherCard } from '@/components/discovery/TeacherCard';
 import { ProductCard } from '@/components/discovery/ProductCard';
 import { SearchBar } from '@/components/discovery/SearchBar';
 import { Button } from '@/components/ui/Button';
 import { getTopRankedTeachersCached } from '@/lib/ranking';
-import { enrichProducts, isPublicProduct } from '@/lib/products';
-import { rankProducts } from '@/lib/productRanking';
+import { getPublicRankedProductsCached } from '@/lib/products';
 import {
   Users,
   BookOpen,
@@ -21,39 +19,12 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 export default async function HomePage() {
-  const [rankedTeachers, rawProducts] = await Promise.all([
+  const [rankedTeachers, products] = await Promise.all([
     getTopRankedTeachersCached(12),
-    prisma.product.findMany({
-      where: { isPublished: true },
-      orderBy: { createdAt: 'desc' },
-      take: 12,
-      select: {
-        id: true,
-        creatorId: true,
-        creatorName: true,
-        creatorType: true,
-        title: true,
-        slug: true,
-        description: true,
-        coverImage: true,
-        productType: true,
-        subject: true,
-        educationLevel: true,
-        priceDZD: true,
-        isFree: true,
-        previewContent: true,
-        isPublished: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    }),
+    getPublicRankedProductsCached(6),
   ]);
 
   const teachers = rankedTeachers.map((r) => r.teacher);
-  const enrichedProducts = await enrichProducts(rawProducts);
-  const eligibleProducts = enrichedProducts.filter(isPublicProduct);
-  const rankedProducts = rankProducts(eligibleProducts);
-  const products = rankedProducts.slice(0, 6).map((r) => r.product);
 
   return (
     <div className="space-y-16 pb-24 text-white">
