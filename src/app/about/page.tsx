@@ -7,16 +7,30 @@ import Link from 'next/link';
 import { prisma } from '@/lib/db';
 import { extractYouTubeId, buildYouTubeEmbedUrl } from '@/lib/youtubeUtils';
 
-// Cache static about page for 1 hour
-export const revalidate = 3600;
+// Real-Time Dynamic Rendering: Always fresh, reflective of all platform updates
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export default async function AboutKrytyPage() {
   const setting = await prisma.platformSetting.findUnique({
     where: { key: 'aboutPlatformVideoUrl' },
   });
   const customVideoUrl = setting?.value?.trim() || '';
-  const isLocalVideo = customVideoUrl && (customVideoUrl.startsWith('/uploads/') || /\.(mp4|webm|mov)$/i.test(customVideoUrl));
-  const youtubeId = !isLocalVideo && customVideoUrl ? extractYouTubeId(customVideoUrl) : null;
+
+  // Extract YouTube ID if setting is a valid YouTube link or raw ID
+  let youtubeId = extractYouTubeId(customVideoUrl);
+
+  // If not YouTube, only treat as local video if it's a known valid local media path and NOT an uploaded corrupted file
+  const isLocalVideo =
+    !youtubeId &&
+    customVideoUrl &&
+    customVideoUrl.startsWith('/media/') &&
+    /\.(mp4|webm)$/i.test(customVideoUrl);
+
+  // If no valid YouTube ID or local video, fallback to official platform YouTube video (9ERQ4_v7B7c)
+  if (!youtubeId && !isLocalVideo) {
+    youtubeId = KRYTY_ASSETS.about.officialYouTubeId || '9ERQ4_v7B7c';
+  }
 
   const corePillars = [
     {
@@ -80,38 +94,34 @@ export default async function AboutKrytyPage() {
               >
                 متصفحك لا يدعم تشغيل الفيديو التعريفي.
               </video>
-            ) : youtubeId ? (
+            ) : (
               <iframe
-                src={buildYouTubeEmbedUrl(youtubeId)}
-                title="العرض الرسمي لمنصة PROF DZ"
+                src={`https://www.youtube.com/embed/${youtubeId}?rel=0&modestbranding=1`}
+                title="العرض التعريفي الرسمي لمنصة PROF DZ"
                 className="w-full h-full border-0"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                referrerPolicy="strict-origin-when-cross-origin"
                 allowFullScreen
               />
-            ) : (
-              <video
-                src={KRYTY_ASSETS.about.accompanyingVideo}
-                controls
-                autoPlay
-                muted
-                loop
-                playsInline
-                className="w-full h-full object-cover"
-                preload="metadata"
-              >
-                متصفحك لا يدعم تشغيل الفيديو التعريفي.
-              </video>
             )}
           </div>
 
           <div className="p-3 sm:p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-slate-300 font-semibold border-t border-white/10 mt-2">
             <span className="flex items-center gap-2 text-white font-bold">
               <CheckCircle className="w-4 h-4 text-cyan-400 shrink-0" />
-              العرض السينمائي الرسمي لمنظومة PROF DZ الرقمية
+              العرض التعريفي الرسمي لمنظومة PROF DZ الرقمية
             </span>
-            <span className="text-xs text-sky-300 font-mono tracking-wider font-bold">
-              PROF DZ OFFICIAL MEDIA 🇩🇿
-            </span>
+            {youtubeId && (
+              <a
+                href={`https://www.youtube.com/watch?v=${youtubeId}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-red-600/20 hover:bg-red-600/30 text-red-300 hover:text-white border border-red-500/40 text-xs font-bold transition-all shadow-sm"
+              >
+                <span>مشاهدة الفيديو على YouTube</span>
+                <ArrowRight className="w-3.5 h-3.5 rotate-180" />
+              </a>
+            )}
           </div>
         </div>
       </section>

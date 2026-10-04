@@ -49,11 +49,13 @@ export function extractYouTubeId(url: string): string | null {
 }
 
 /**
- * Builds a privacy-enhanced YouTube embed URL from a video ID.
+ * Builds a YouTube embed URL from a video ID.
+ * Defaults to standard www.youtube.com/embed for maximum compatibility across all networks.
  */
-export function buildYouTubeEmbedUrl(videoId: string): string {
+export function buildYouTubeEmbedUrl(videoId: string, useNoCookie: boolean = false): string {
   if (!YT_ID_REGEX.test(videoId)) return '';
-  return `https://www.youtube-nocookie.com/embed/${videoId}`;
+  const domain = useNoCookie ? 'www.youtube-nocookie.com' : 'www.youtube.com';
+  return `https://${domain}/embed/${videoId}`;
 }
 
 /**

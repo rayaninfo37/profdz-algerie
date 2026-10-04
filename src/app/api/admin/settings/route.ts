@@ -72,6 +72,11 @@ export async function POST(request: Request) {
         },
       });
 
+      const { revalidatePath } = await import('next/cache');
+      revalidatePath('/about');
+      revalidatePath('/');
+      revalidatePath('/admin');
+
       return NextResponse.json({ success: true, message: 'تم تحديث الإعدادات بنجاح' });
     }
 
@@ -95,6 +100,11 @@ export async function POST(request: Request) {
         details: isSensitive ? `Updated ${key} to ***MASKED***` : `Updated ${key} to ${value}`,
       },
     });
+
+    const { revalidatePath } = await import('next/cache');
+    revalidatePath('/about');
+    revalidatePath('/');
+    revalidatePath('/admin');
 
     return NextResponse.json({ success: true, setting: updatedSetting });
   } catch (error: any) {

@@ -20,6 +20,8 @@ export const KRYTY_ASSETS = {
   about: {
     primaryImage: '/assets/images/5.png',
     accompanyingVideo: '/assets/videos/h.mp4',
+    officialYouTubeId: '9ERQ4_v7B7c',
+    officialYouTubeUrl: 'https://www.youtube.com/watch?v=9ERQ4_v7B7c',
   },
   hero: {
     mainImage: '/assets/images/1.png',

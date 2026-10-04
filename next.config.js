@@ -53,7 +53,7 @@ const nextConfig = {
 
       // Dynamic pages: tell Netlify CDN not to cache, vary by cookie for auth
       {
-        source: '/(|teachers|products|feed|ranking|library|dashboard/:path*|admin|admin/:path*|institutions/:path*|students/:path*|parents/:path*)',
+        source: '/(|about|teachers|products|feed|ranking|library|dashboard/:path*|admin|admin/:path*|institutions/:path*|students/:path*|parents/:path*)',
         headers: [
           { key: 'Cache-Control', value: 'private, no-cache, no-store, max-age=0, must-revalidate' },
           { key: 'Netlify-Vary', value: 'Cookie' },
