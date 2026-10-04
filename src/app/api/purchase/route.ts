@@ -163,6 +163,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'فشل حفظ الطلب. يرجى المحاولة مجدداً.' }, { status: 500 });
     }
 
+    try {
+      const { revalidatePath } = await import('next/cache');
+      revalidatePath('/dashboard/teacher');
+    } catch {}
+
     return NextResponse.json({
       success: true,
       message: 'تم إرسال طلبك بنجاح! سيتواصل معك الأستاذ قريباً.',

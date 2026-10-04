@@ -126,6 +126,17 @@ export async function POST(request: Request) {
       },
     });
 
+    try {
+      const { revalidatePath } = await import('next/cache');
+      if (postId) {
+        revalidatePath('/feed');
+        revalidatePath('/dashboard/teacher');
+      }
+      if (productId) {
+        revalidatePath('/products');
+      }
+    } catch {}
+
     return NextResponse.json({ success: true, comment }, { status: 201 });
   } catch (error) {
     console.error('Failed to create comment:', error);
@@ -175,6 +186,17 @@ export async function DELETE(request: Request) {
     await prisma.comment.delete({
       where: { id: commentId },
     });
+
+    try {
+      const { revalidatePath } = await import('next/cache');
+      if (comment.postId) {
+        revalidatePath('/feed');
+        revalidatePath('/dashboard/teacher');
+      }
+      if (comment.productId) {
+        revalidatePath('/products');
+      }
+    } catch {}
 
     return NextResponse.json({ success: true, message: 'تم حذف التعليق بنجاح.' });
   } catch (error) {

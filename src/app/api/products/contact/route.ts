@@ -64,6 +64,11 @@ export async function POST(request: Request) {
       },
     });
 
+    try {
+      const { revalidatePath } = await import('next/cache');
+      revalidatePath('/dashboard/teacher');
+    } catch {}
+
     return NextResponse.json({
       success: true,
       contactRequest: contactReq,

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { getCurrentUser } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { UserRole, PostType, SubscriptionState } from '@/types';
@@ -288,6 +289,13 @@ export async function POST(request: Request) {
       },
     });
 
+    // Revalidate affected pages immediately
+    revalidatePath('/feed');
+    revalidatePath('/dashboard/teacher');
+    if (user.teacherProfile?.id) {
+      revalidatePath(`/teachers/${user.teacherProfile.id}`);
+    }
+
     return NextResponse.json({ success: true, post });
   } catch (error: any) {
     console.error('Create post error:', error);
@@ -324,6 +332,12 @@ export async function DELETE(request: Request) {
     await prisma.post.delete({
       where: { id: postId },
     });
+
+    revalidatePath('/feed');
+    revalidatePath('/dashboard/teacher');
+    if (user.teacherProfile?.id) {
+      revalidatePath(`/teachers/${user.teacherProfile.id}`);
+    }
 
     return NextResponse.json({ success: true, message: 'تم حذف المنشور بنجاح' });
   } catch (error: any) {

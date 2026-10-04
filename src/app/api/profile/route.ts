@@ -317,11 +317,19 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    // Invalidate ISR caches for teacher listings when teacher profile is updated
+    // Invalidate caches when profile is updated
     if (user.role === UserRole.TEACHER) {
       invalidateRankingCache();
       revalidatePath('/teachers');
       revalidatePath('/');
+      revalidatePath('/dashboard/teacher');
+      if (refreshedUser.teacherProfile?.id) {
+        revalidatePath(`/teachers/${refreshedUser.teacherProfile.id}`);
+      }
+    } else if (user.role === UserRole.STUDENT) {
+      revalidatePath('/dashboard/student');
+    } else if (user.role === UserRole.PARENT) {
+      revalidatePath('/dashboard/parent');
     }
 
     return NextResponse.json({ success: true, user: sanitizeUserForClient(refreshedUser) });
