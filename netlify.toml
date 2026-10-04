@@ -2,6 +2,11 @@
 command = "npx prisma generate && npm run build"
 publish = ".next"
 
+# Edge function: strip Netlify's injected HTML comment from all page responses
+[[edge_functions]]
+  path = "/*"
+  function = "strip-netlify-comment"
+
 # Force Netlify CDN to never durably cache the /about page (it embeds a DB-driven YouTube video)
 [[headers]]
   for = "/about"

@@ -1,5 +1,6 @@
 import React, { Suspense } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { TeacherCard } from '@/components/discovery/TeacherCard';
 import { ProductCard } from '@/components/discovery/ProductCard';
 import { SearchBar } from '@/components/discovery/SearchBar';
@@ -14,9 +15,8 @@ import {
   Compass,
 } from 'lucide-react';
 
-// Real-Time Dynamic Rendering: Always fresh, reflective of all platform updates
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+// ISR: rebuild every 60s — underlying data functions have 5s in-memory TTL
+export const revalidate = 60;
 
 export default async function HomePage() {
   const [rankedTeachers, products] = await Promise.all([
@@ -41,10 +41,13 @@ export default async function HomePage() {
           <div className="relative rounded-3xl overflow-hidden border border-white/20 shadow-2xl min-h-[440px] flex items-end">
             {/* Real Monumental Maqam Echahid & Bay of Algiers Background - Clean, Sharp & Vivid */}
             <div className="absolute inset-0 z-0">
-              <img
+              <Image
                 src="/media/hero/maqam_echahid_algiers.jpg"
                 alt="Maqam Echahid Algiers - مقام الشهيد"
-                className="w-full h-full object-cover object-center"
+                fill
+                priority
+                sizes="100vw"
+                className="object-cover object-center"
               />
               {/* Local contrast gradient strictly behind text block on the left/bottom */}
               <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-slate-950/20 to-transparent" />

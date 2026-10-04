@@ -1,11 +1,11 @@
 import React from 'react';
+import Image from 'next/image';
 import { ProductCard } from '@/components/discovery/ProductCard';
 import { getPublicRankedProductsCached } from '@/lib/products';
 import { BookOpen } from 'lucide-react';
 
-// Dynamic real-time products catalog
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+// ISR: rebuild every 60s — products catalog is fully public, no personalization
+export const revalidate = 60;
 
 export default async function ProductsCatalogPage() {
   const products = await getPublicRankedProductsCached(60);
@@ -15,10 +15,13 @@ export default async function ProductsCatalogPage() {
       {/* Editorial Header Banner with Academic Atmosphere - Crystal Clear */}
       <div className="relative rounded-3xl min-h-[220px] flex items-center border border-sky-400/40 p-8 sm:p-10 overflow-hidden shadow-2xl text-white bg-slate-950">
         <div className="absolute inset-0 z-0">
-          <img
+          <Image
             src="/media/education/academic_library.jpg"
             alt="المكتبة التعليمية الرقمية"
-            className="w-full h-full object-cover object-center filter brightness-[0.88] contrast-[1.08]"
+            fill
+            priority
+            sizes="100vw"
+            className="object-cover object-center brightness-[0.88] contrast-[1.08]"
           />
           <div className="absolute inset-0 bg-gradient-to-r from-[#06101D]/80 via-[#0A1B33]/50 to-transparent" />
         </div>

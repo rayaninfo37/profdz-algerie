@@ -1,12 +1,13 @@
 import React, { Suspense } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { prisma } from '@/lib/db';
 import { TeacherCard } from '@/components/discovery/TeacherCard';
 import { SearchBar } from '@/components/discovery/SearchBar';
 import { Users, ChevronRight, ChevronLeft, Filter } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { expandSubjectKeywords, expandLevelKeywords } from '@/lib/taxonomy';
-import { calculateBayesianScore } from '@/lib/ranking';
+import { calculateBayesianScore, getAllRankedTeachersCached } from '@/lib/ranking';
 
 // Dynamic real-time teachers directory
 export const dynamic = 'force-dynamic';
@@ -133,7 +134,6 @@ export default async function TeachersDirectoryPage({ searchParams }: TeachersPa
   let totalCount = 0;
 
   if (!hasFilters) {
-    const { getAllRankedTeachersCached } = await import('@/lib/ranking');
     const allRanked = await getAllRankedTeachersCached();
     totalCount = allRanked.length;
     scoredTeachers = allRanked.map((r: any) => ({
@@ -231,10 +231,13 @@ export default async function TeachersDirectoryPage({ searchParams }: TeachersPa
       {/* Directory Header Banner */}
       <div className="relative rounded-3xl min-h-[220px] flex items-center border border-sky-400/40 p-8 sm:p-10 overflow-hidden shadow-2xl text-white bg-slate-950">
         <div className="absolute inset-0 z-0">
-          <img
+          <Image
             src="/media/algiers/algiers_panoramic.jpg"
             alt="دليل الأساتذة في الجزائر"
-            className="w-full h-full object-cover object-center filter brightness-[0.90] contrast-[1.08]"
+            fill
+            priority
+            sizes="100vw"
+            className="object-cover object-center brightness-[0.90] contrast-[1.08]"
           />
           <div className="absolute inset-0 bg-gradient-to-l from-[#06101D]/85 via-[#0A1B33]/55 to-transparent" />
         </div>

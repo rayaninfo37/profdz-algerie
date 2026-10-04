@@ -32,8 +32,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'كلمة المرور مطلوبة لتأكيد حذف الحساب.' }, { status: 400 });
     }
 
+    // Fetch passwordHash directly — not included in getCurrentUser to reduce per-request payload
+    const userWithHash = await prisma.user.findUnique({
+      where: { id: user.id },
+      select: { passwordHash: true },
+    });
+
     // Verify password before deletion
-    const isValid = await verifyPassword(password, user.passwordHash);
+    const isValid = await verifyPassword(password, userWithHash?.passwordHash ?? '');
     if (!isValid) {
       return NextResponse.json({ error: 'كلمة المرور غير صحيحة.' }, { status: 401 });
     }

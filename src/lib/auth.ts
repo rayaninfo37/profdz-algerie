@@ -65,7 +65,7 @@ export const getCurrentUser = cache(async () => {
       wilaya: true,
       isFrozen: true,
       softDeletedAt: true,
-      passwordHash: true,
+      // passwordHash intentionally excluded — only fetched in login route
       teacherProfile: {
         select: {
           id: true,
@@ -89,9 +89,8 @@ export const getCurrentUser = cache(async () => {
           telegram: true,
           facebook: true,
           storeLocation: true,
-          googleAccessToken: true,
-          googleRefreshToken: true,
-          googleTokenExpiry: true,
+          // googleAccessToken/RefreshToken/Expiry excluded — only needed for Calendar integration
+          googleRefreshToken: true, // kept as boolean check for isGoogleConnected
         },
       },
       studentProfile: {
@@ -156,17 +155,21 @@ export async function clearSessionCookie() {
 }
 
 /**
- * Strips password hash and Google OAuth tokens from user objects before returning to clients
+/**
+ * Strips sensitive fields from user objects before returning to clients.
+ * passwordHash is no longer fetched in getCurrentUser (only fetched in login route).
+ * googleAccessToken/Expiry are no longer fetched (only googleRefreshToken for isGoogleConnected).
  */
 export function sanitizeUserForClient(user: any) {
   if (!user) return null;
-  const { passwordHash, ...safeUser } = user;
+  // passwordHash may still come from login route — always strip it if present
+  const { passwordHash: _ph, ...safeUser } = user;
 
   if (safeUser.teacherProfile) {
     const {
-      googleAccessToken,
+      googleAccessToken: _gat,
       googleRefreshToken,
-      googleTokenExpiry,
+      googleTokenExpiry: _gte,
       ...safeTeacherProfile
     } = safeUser.teacherProfile;
 

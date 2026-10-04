@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/db';
+import { rankProducts } from '@/lib/productRanking';
 
 export interface EnrichedProduct {
   id: string;
@@ -90,6 +91,7 @@ export async function enrichProduct(product: any): Promise<EnrichedProduct> {
   } else if (product.creatorType === 'INSTITUTION') {
     const inst = await prisma.institutionProfile.findUnique({
       where: { id: product.creatorId },
+      select: { id: true, phone: true, website: true, name: true },
     });
     if (inst) {
       phone = inst.phone;
@@ -262,8 +264,6 @@ export async function getPublicRankedProductsCached(limit = 60): Promise<any[]> 
 
   productsPromise = (async () => {
     try {
-      const { rankProducts } = await import('@/lib/productRanking');
-
       const rawProducts = await prisma.product.findMany({
         where: { isPublished: true },
         orderBy: { createdAt: 'desc' },
