@@ -1,6 +1,5 @@
 [build]
 command = "npx prisma generate && npm run build"
-publish = ".next"
 
 # Force Netlify CDN to never durably cache the /about page (it embeds a DB-driven YouTube video)
 [[headers]]
