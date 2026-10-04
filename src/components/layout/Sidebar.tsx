@@ -38,14 +38,24 @@ export const Sidebar = () => {
   const [currentUser, setCurrentUser] = useState<any>(null);
 
   useEffect(() => {
-    import('@/lib/clientAuth').then(({ getClientAuth }) => {
+    let unsubscribe = () => {};
+
+    import('@/lib/clientAuth').then(({ getClientAuth, subscribeToAuthChange }) => {
       getClientAuth().then((data) => {
         if (data.authenticated) {
           setCurrentUser(data.user);
         }
       }).catch(() => {});
+
+      unsubscribe = subscribeToAuthChange((auth) => {
+        setCurrentUser(auth.authenticated ? auth.user : null);
+      });
     });
-  }, []); // Fetch once on mount via deduplicated client cache
+
+    return () => {
+      unsubscribe();
+    };
+  }, []);
 
   const label = (item: { labelAr: string; labelEn: string; labelFr: string }) => item.labelAr;
 

@@ -14,14 +14,24 @@ export const PersistentProfileAnchor = () => {
   const [closed, setClosed] = useState(false);
 
   useEffect(() => {
-    import('@/lib/clientAuth').then(({ getClientAuth }) => {
+    let unsubscribe = () => {};
+
+    import('@/lib/clientAuth').then(({ getClientAuth, subscribeToAuthChange }) => {
       getClientAuth().then((data) => {
         if (data.authenticated) {
           setCurrentUser(data.user);
         }
         setLoading(false);
       }).catch(() => setLoading(false));
+
+      unsubscribe = subscribeToAuthChange((auth) => {
+        setCurrentUser(auth.authenticated ? auth.user : null);
+      });
     });
+
+    return () => {
+      unsubscribe();
+    };
   }, []);
 
   if (closed || loading) return null;

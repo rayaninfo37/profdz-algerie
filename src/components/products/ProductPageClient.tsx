@@ -5,6 +5,7 @@ import { ShoppingCart } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { YouTubePlayer } from '@/components/ui/YouTubePlayer';
 import { PurchaseFormModal } from '@/components/products/PurchaseFormModal';
+import { extractYouTubeId } from '@/lib/youtubeUtils';
 
 interface ProductPageClientProps {
   product: {
@@ -21,13 +22,16 @@ interface ProductPageClientProps {
 export const ProductPageClient: React.FC<ProductPageClientProps> = ({ product, teacherActive }) => {
   const [purchaseOpen, setPurchaseOpen] = useState(false);
 
+  // Extract the 11-char video ID from the stored raw YouTube URL
+  const youtubeVideoId = product.youtubeUrl ? extractYouTubeId(product.youtubeUrl) : null;
+
   return (
     <div className="space-y-6">
       {/* YouTube Video Player */}
-      {product.youtubeUrl && (
+      {youtubeVideoId && (
         <div className="clean-card p-6 bg-[#0A1628]/90 border border-cyan-500/25 shadow-xl backdrop-blur-xl rounded-3xl space-y-3">
           <h3 className="text-base font-bold text-white">معاينة الفيديو التعليمي</h3>
-          <YouTubePlayer videoId={product.youtubeUrl} title={product.title} />
+          <YouTubePlayer videoId={youtubeVideoId} title={product.title} />
         </div>
       )}
 

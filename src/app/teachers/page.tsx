@@ -8,7 +8,8 @@ import { Button } from '@/components/ui/Button';
 import { expandSubjectKeywords, expandLevelKeywords } from '@/lib/taxonomy';
 import { calculateBayesianScore } from '@/lib/ranking';
 
-export const revalidate = 30;
+// Dynamic real-time teachers directory
+export const revalidate = 0;
 
 interface TeachersPageProps {
   searchParams: Promise<{

@@ -200,6 +200,11 @@ export async function POST(request: Request) {
       try {
         const { invalidateRankingCache } = await import('@/lib/ranking');
         invalidateRankingCache();
+        const { revalidatePath } = await import('next/cache');
+        revalidatePath('/teachers');
+        revalidatePath('/');
+        revalidatePath('/ranking');
+        revalidatePath(`/teachers/${targetId}`);
       } catch (e) {}
     }
 
@@ -254,6 +259,13 @@ export async function DELETE(request: Request) {
             reviewCount: agg._count.rating,
           },
         });
+        const { invalidateRankingCache } = await import('@/lib/ranking');
+        invalidateRankingCache();
+        const { revalidatePath } = await import('next/cache');
+        revalidatePath('/teachers');
+        revalidatePath('/');
+        revalidatePath('/ranking');
+        revalidatePath(`/teachers/${review.targetId}`);
       } catch (e) {}
     }
 

@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { ShieldCheck, MapPin, Star, MessageSquare, Phone, ExternalLink, UserPlus, Check, Lock, Send } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Badge, RoleBadge } from '@/components/ui/Badge';
@@ -44,6 +45,7 @@ export interface TeacherCardProps {
     };
     reviews?: Array<{ rating: number }>;
     ratingAverage?: number;
+    reviewCount?: number;
   };
   rank?: number;
   isAuthenticated?: boolean;
@@ -59,12 +61,22 @@ export const TeacherCard: React.FC<TeacherCardProps> = ({
 }) => {
   const toast = useToast();
   const { t, locale, dir } = useLocale();
+  const router = useRouter();
   const [contactModalOpen, setContactModalOpen] = useState(false);
   const [reviewModalOpen, setReviewModalOpen] = useState(false);
   const [rating, setRating] = useState(5);
   const [reviewComment, setReviewComment] = useState('');
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
   const [isAuth, setIsAuth] = useState(isAuthenticated);
+
+  const [localReviewCount, setLocalReviewCount] = useState<number>(
+    teacher._count?.reviews ?? (teacher.reviews ? teacher.reviews.length : (teacher.reviewCount ?? 0))
+  );
+  const [localRatingAvg, setLocalRatingAvg] = useState<number>(
+    teacher.ratingAverage ?? (teacher.reviews && teacher.reviews.length > 0
+      ? teacher.reviews.reduce((sum, r) => sum + r.rating, 0) / teacher.reviews.length
+      : 0)
+  );
 
   React.useEffect(() => {
     if (!isAuthenticated) {
@@ -86,11 +98,7 @@ export const TeacherCard: React.FC<TeacherCardProps> = ({
 
   const isFrozen = teacher.subscriptionState === 'FROZEN';
 
-  const reviewCount = teacher._count?.reviews ?? (teacher.reviews ? teacher.reviews.length : 0);
-  const rawAvg = teacher.ratingAverage ?? (teacher.reviews && teacher.reviews.length > 0
-    ? teacher.reviews.reduce((sum, r) => sum + r.rating, 0) / teacher.reviews.length
-    : 0);
-  const formattedRating = rawAvg > 0 ? (Math.round(rawAvg * 10) / 10).toFixed(1) : null;
+  const formattedRating = localRatingAvg > 0 ? (Math.round(localRatingAvg * 10) / 10).toFixed(1) : null;
 
   const priceDisplay = (() => {
     if (teacher.priceMin !== undefined && teacher.priceMin !== null && teacher.priceMax !== undefined && teacher.priceMax !== null) {
@@ -140,8 +148,13 @@ export const TeacherCard: React.FC<TeacherCardProps> = ({
       const data = await res.json();
       if (data.success) {
         toast.success('تم تقديم تقييمك بنجاح! شكراً لك.');
+        const newCount = localReviewCount + 1;
+        const newAvg = Math.round(((localRatingAvg * localReviewCount + rating) / newCount) * 10) / 10;
+        setLocalReviewCount(newCount);
+        setLocalRatingAvg(newAvg);
         setReviewModalOpen(false);
         setReviewComment('');
+        router.refresh();
       } else {
         toast.error(data.error || 'فشل في إرسال التقييم.');
       }
@@ -218,9 +231,9 @@ export const TeacherCard: React.FC<TeacherCardProps> = ({
                   onClick={() => setReviewModalOpen(true)}
                   className="flex items-center gap-1 text-amber-400 font-bold hover:underline"
                 >
-                  <Star className={`w-3.5 h-3.5 ${reviewCount > 0 ? 'fill-amber-400 text-amber-400' : 'text-slate-600'}`} />
-                  {reviewCount > 0 ? (
-                    <span>{formattedRating} ★ ({reviewCount} {t.discovery.reviews})</span>
+                  <Star className={`w-3.5 h-3.5 ${localReviewCount > 0 ? 'fill-amber-400 text-amber-400' : 'text-slate-600'}`} />
+                  {localReviewCount > 0 ? (
+                    <span>{formattedRating} ★ ({localReviewCount} {t.discovery.reviews})</span>
                   ) : (
                     <span className="text-slate-500 font-normal">{t.discovery.newBadge} (0 {t.discovery.reviews})</span>
                   )}

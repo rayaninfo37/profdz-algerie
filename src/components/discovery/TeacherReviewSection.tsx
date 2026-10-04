@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Star, MessageSquare, Plus, Check } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import AvatarFallback from '@/components/common/AvatarFallback';
@@ -30,6 +31,7 @@ export const TeacherReviewSection: React.FC<TeacherReviewSectionProps> = ({
   currentUserId,
   initialReviews,
 }) => {
+  const router = useRouter();
   const [reviews, setReviews] = useState(initialReviews);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [rating, setRating] = useState(5);
@@ -74,6 +76,7 @@ export const TeacherReviewSection: React.FC<TeacherReviewSectionProps> = ({
         setComment('');
         setShowForm(false);
         setSuccessMessage('تم نشر تقييمك بنجاح!');
+        router.refresh();
       } else {
         setError(data.error || 'فشل في إرسال التقييم');
       }

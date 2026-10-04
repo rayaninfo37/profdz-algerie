@@ -78,9 +78,9 @@ export function rankTeachers<T extends TeacherRankingInput>(
   }));
 }
 
-// In-Memory 15-minute Ranking Snapshot Cache (900 seconds = 15 minutes)
+// In-Memory Real-Time Ranking Snapshot Cache (5 seconds TTL for instant dynamic updates)
 let cachedRankingSnapshot: { data: any[]; timestamp: number } | null = null;
-const RANKING_CACHE_TTL_MS = 900 * 1000; // 900 seconds
+const RANKING_CACHE_TTL_MS = 5 * 1000; // 5 seconds
 
 export async function getAllRankedTeachersCached() {
   const now = Date.now();

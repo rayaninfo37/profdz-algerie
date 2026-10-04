@@ -41,7 +41,9 @@ export const Navbar = () => {
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
 
   useEffect(() => {
-    import('@/lib/clientAuth').then(({ getClientAuth }) => {
+    let unsubscribe = () => {};
+
+    import('@/lib/clientAuth').then(({ getClientAuth, subscribeToAuthChange }) => {
       getClientAuth().then((data) => {
         if (data.authenticated) {
           setCurrentUser(data.user);
@@ -60,8 +62,24 @@ export const Navbar = () => {
         }
         setLoading(false);
       }).catch(() => setLoading(false));
+
+      unsubscribe = subscribeToAuthChange((auth) => {
+        setCurrentUser(auth.authenticated ? auth.user : null);
+        if (auth.authenticated && auth.user) {
+          fetch('/api/notifications')
+            .then((r) => r.json())
+            .then((n) => setNotifications(n.notifications || []))
+            .catch(() => {});
+        } else {
+          setNotifications([]);
+        }
+      });
     });
-  }, []); // Fetch once on mount — auth state persists across navigation via deduplicated client cache
+
+    return () => {
+      unsubscribe();
+    };
+  }, []);
 
   const handleMarkNotificationsRead = async () => {
     setNotifDropdownOpen(!notifDropdownOpen);

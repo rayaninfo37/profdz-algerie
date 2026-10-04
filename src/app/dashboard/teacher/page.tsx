@@ -43,6 +43,7 @@ export default async function TeacherDashboardPage() {
     contactClicks30d,
     productsCount,
     reviewsCount,
+    teacherProducts,
   ] = await Promise.all([
     getTeacherReachStatus(teacher.id),
     prisma.subscription.findFirst({
@@ -102,6 +103,28 @@ export default async function TeacherDashboardPage() {
     prisma.product.count({ where: { creatorId: teacher.id, isPublished: true } }),
     // 9. التقييمات والمراجعات
     prisma.review.count({ where: { targetId: teacher.id, status: 'PUBLISHED' } }),
+    // 10. كامل كتالوج منتجات الأستاذ (للإدارة الكاملة في لوحة التحكم)
+    prisma.product.findMany({
+      where: { creatorId: teacher.id },
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        subject: true,
+        educationLevel: true,
+        educationTargets: true,
+        productType: true,
+        priceDZD: true,
+        isFree: true,
+        previewContent: true,
+        coverImage: true,
+        youtubeUrl: true,
+        isPublished: true,
+        slug: true,
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 100,
+    }),
   ]);
 
   const postInteractions30d = postLikes30d + postComments30d;
@@ -277,6 +300,7 @@ export default async function TeacherDashboardPage() {
         productsCount={productsCount}
         activeSubscription={activeSubscription}
         contactRequests={contactRequests}
+        initialProducts={teacherProducts as any}
       />
 
       {/* Orders Inbox — طلبات المنتجات */}

@@ -207,10 +207,14 @@ export const ProfileEditorModal: React.FC<ProfileEditorModalProps> = ({
       const data = await res.json();
       if (res.ok && data.success) {
         setSuccessMsg('تم حفظ التغييرات بنجاح!');
+        if (data.user) {
+          const { setClientAuth } = await import('@/lib/clientAuth');
+          setClientAuth(data.user);
+        }
         setTimeout(() => {
           onClose();
           if (onProfileUpdated) onProfileUpdated();
-        }, 600);
+        }, 500);
       } else {
         setError(data.error || 'فشل حفظ الملف الشخصي.');
       }

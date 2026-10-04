@@ -237,6 +237,10 @@ export async function PUT(
     invalidateRankingCache();
     revalidatePath('/products');
     revalidatePath('/');
+    revalidatePath('/dashboard/teacher');
+    if (updatedProduct.slug) {
+      revalidatePath(`/products/${updatedProduct.slug}`);
+    }
 
     await prisma.auditLog.create({
       data: {
@@ -315,6 +319,10 @@ export async function DELETE(
     invalidateRankingCache();
     revalidatePath('/products');
     revalidatePath('/');
+    revalidatePath('/dashboard/teacher');
+    if (product.slug) {
+      revalidatePath(`/products/${product.slug}`);
+    }
 
     await prisma.auditLog.create({
       data: {

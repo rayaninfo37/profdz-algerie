@@ -16,9 +16,8 @@ import {
   Compass,
 } from 'lucide-react';
 
-// Incremental Static Regeneration (ISR): 5-minute CDN cache TTL
-// Delivers instant responses (<100ms) globally from Netlify Edge CDN
-export const revalidate = 300;
+// Real-Time Dynamic Rendering: Always fresh, reflective of all platform updates
+export const revalidate = 0;
 
 export default async function HomePage() {
   const [rankedTeachers, rawProducts] = await Promise.all([

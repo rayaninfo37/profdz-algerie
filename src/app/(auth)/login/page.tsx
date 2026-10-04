@@ -27,6 +27,9 @@ export default function LoginPage() {
       const data = await res.json();
 
       if (data.success) {
+        const { setClientAuth } = await import('@/lib/clientAuth');
+        setClientAuth(data.user);
+
         switch (data.user.role) {
           case 'TEACHER':
             router.push('/dashboard/teacher');

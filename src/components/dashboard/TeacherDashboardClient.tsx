@@ -4,10 +4,9 @@ import React, { useState } from 'react';
 import { CreatePostModal } from '@/components/feed/CreatePostModal';
 import { ProfileEditorModal } from '@/components/dashboard/ProfileEditorModal';
 import { PaymentProofModal } from '@/components/dashboard/PaymentProofModal';
-import { CreateProductModal } from '@/components/dashboard/CreateProductModal';
+import { TeacherProductsManager } from '@/components/dashboard/TeacherProductsManager';
 import {
   Newspaper,
-  BookOpen,
   Plus,
   UserCheck,
   Edit3,
@@ -15,12 +14,8 @@ import {
   CreditCard,
   MessageSquare,
   Sparkles,
-  CheckCircle2,
-  Clock,
-  Send,
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
-import Link from 'next/link';
 
 export interface TeacherDashboardClientProps {
   teacherId: string;
@@ -28,6 +23,7 @@ export interface TeacherDashboardClientProps {
   postsCount: number;
   productsCount: number;
   activeSubscription?: any;
+  initialProducts?: any[];
   contactRequests?: Array<{
     id: string;
     product: { title: string; slug: string };
@@ -42,12 +38,12 @@ export const TeacherDashboardClient: React.FC<TeacherDashboardClientProps> = ({
   teacherId,
   user,
   postsCount,
-  productsCount,
+  productsCount: _productsCount,
   activeSubscription,
+  initialProducts = [],
   contactRequests = [],
 }) => {
   const [createPostOpen, setCreatePostOpen] = useState(false);
-  const [createProductOpen, setCreateProductOpen] = useState(false);
   const [editProfileOpen, setEditProfileOpen] = useState(false);
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
 
@@ -87,7 +83,7 @@ export const TeacherDashboardClient: React.FC<TeacherDashboardClientProps> = ({
       </div>
 
       {/* Section 2: Core Action Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {/* Card 1: Profile Management */}
         <div className="clean-card p-6 space-y-4 bg-[#111D38] border border-[#1E3A5F] flex flex-col justify-between">
           <div className="space-y-2">
@@ -133,43 +129,7 @@ export const TeacherDashboardClient: React.FC<TeacherDashboardClientProps> = ({
           </Button>
         </div>
 
-        {/* Card 3: Digital Products */}
-        <div className="clean-card p-6 space-y-4 bg-[#111D38] border border-[#1E3A5F] flex flex-col justify-between">
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <h3 className="text-base font-bold text-white flex items-center gap-2">
-                <BookOpen className="w-5 h-5 text-teal-400" /> المنتجات والكتب
-              </h3>
-              <span className="text-xs text-teal-300 font-bold bg-slate-900 px-2 py-0.5 rounded-lg">
-                {productsCount}
-              </span>
-            </div>
-            <p className="text-xs text-stone-300 leading-relaxed">
-              نشر كتب رقمية وملخصات بكالوريا للتواصل والاستفسار المباشر.
-            </p>
-          </div>
-          <div className="flex flex-col gap-2">
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={() => setCreateProductOpen(true)}
-              className="w-full gap-2 bg-teal-600 hover:bg-teal-700 text-white font-bold"
-            >
-              <Plus className="w-4 h-4" /> إضافة منتج
-            </Button>
-            <Link href="/products" className="block">
-              <Button
-                variant="outline"
-                size="sm"
-                className="w-full gap-2 border-slate-700 text-stone-200 hover:bg-slate-800"
-              >
-                <BookOpen className="w-4 h-4" /> تصفح المتجر
-              </Button>
-            </Link>
-          </div>
-        </div>
-
-        {/* Card 4: Official Verification Vault */}
+        {/* Card 3: Official Verification Vault */}
         <div className="clean-card p-6 space-y-4 bg-[#111D38] border border-[#1E3A5F] flex flex-col justify-between">
           <div className="space-y-2">
             <div className="flex items-center justify-between">
@@ -193,6 +153,12 @@ export const TeacherDashboardClient: React.FC<TeacherDashboardClientProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Section 2b: Full Products & Resources Manager */}
+      <TeacherProductsManager
+        initialProducts={initialProducts as any}
+        teacherId={teacherId}
+      />
 
       {/* Section 3: Direct Student Inquiries Table ("تواصل الآن") */}
       <div className="clean-card p-6 bg-[#111D38] border border-[#1E3A5F] rounded-2xl space-y-4">
@@ -264,11 +230,7 @@ export const TeacherDashboardClient: React.FC<TeacherDashboardClientProps> = ({
         onPostCreated={() => window.location.reload()}
       />
 
-      <CreateProductModal
-        isOpen={createProductOpen}
-        onClose={() => setCreateProductOpen(false)}
-        onSuccess={() => window.location.reload()}
-      />
+
 
       <ProfileEditorModal
         isOpen={editProfileOpen}
