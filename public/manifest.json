@@ -1,0 +1,31 @@
+{
+  "name": "PROF DZ — المنظومة التعليمية الوطنية في الجزائر",
+  "short_name": "PROF DZ",
+  "description": "منصة جزائرية تعليمية لربط التلاميذ والطلبة بالأساتذة والمدرسين عبر 58 ولاية.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#06101D",
+  "theme_color": "#0ea5e9",
+  "icons": [
+    {
+      "src": "/favicon-32x32.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

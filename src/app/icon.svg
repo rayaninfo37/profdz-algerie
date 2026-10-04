@@ -1,4 +1,18 @@
-﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <rect width="32" height="32" rx="8" fill="#0D9488"/>
-  <path d="M9 7h4v7l6-7h5l-7 8 7.5 10h-5.2L13 16.5V25H9V7z" fill="#FFFFFF"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <defs>
+    <linearGradient id="profdz-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0284c7"/>
+      <stop offset="50%" stop-color="#0ea5e9"/>
+      <stop offset="100%" stop-color="#14b8a6"/>
+    </linearGradient>
+  </defs>
+  <rect width="32" height="32" rx="7" fill="url(#profdz-grad)"/>
+  <!-- Graduation cap mortarboard -->
+  <polygon points="16,6 27,11.5 16,17 5,11.5" fill="#ffffff"/>
+  <!-- Cap skull portion -->
+  <path d="M9.5,13.5 L9.5,18 C9.5,21.5 13,23.5 16,23.5 C19,23.5 22.5,21.5 22.5,18 L22.5,13.5 L16,16.8 Z" fill="#ffffff" fill-opacity="0.95"/>
+  <!-- Tassel -->
+  <path d="M25,12.5 L25,20 C25,20.8 24.2,21.5 23.5,21.5" stroke="#ffffff" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+  <!-- Small DZ star badge at base -->
+  <circle cx="16" cy="27" r="1.8" fill="#ffffff"/>
 </svg>

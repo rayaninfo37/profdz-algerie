@@ -51,9 +51,27 @@ const nextConfig = {
         ],
       },
 
-      // Dynamic pages: tell Netlify CDN not to cache, vary by cookie for auth
+      // Static assets, media, and favicons: aggressive long-term caching for instantaneous (0-20ms) loading
       {
-        source: '/(|about|teachers|products|feed|ranking|library|dashboard/:path*|admin|admin/:path*|institutions/:path*|students/:path*|parents/:path*)',
+        source: '/(favicon.*|icon-.*|apple-touch-icon.png|manifest.json|media/:path*)',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
+        ],
+      },
+
+      // Public ISR marketing & discovery pages: fast CDN cache hits (~100ms) with background revalidation
+      {
+        source: '/(|products)',
+        headers: [
+          { key: 'Cache-Control', value: 'public, s-maxage=60, stale-while-revalidate=300' },
+          { key: 'CDN-Cache-Control', value: 'public, s-maxage=60, stale-while-revalidate=300' },
+          { key: 'Netlify-CDN-Cache-Control', value: 'public, s-maxage=60, stale-while-revalidate=300' },
+        ],
+      },
+
+      // Dynamic authenticated & sensitive routes: private, no CDN caching
+      {
+        source: '/(about|dashboard/:path*|admin|admin/:path*)',
         headers: [
           { key: 'Cache-Control', value: 'private, no-cache, no-store, max-age=0, must-revalidate' },
           { key: 'Netlify-Vary', value: 'Cookie' },
