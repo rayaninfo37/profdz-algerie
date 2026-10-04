@@ -5,13 +5,17 @@ import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import Link from 'next/link';
 import { prisma } from '@/lib/db';
-import { extractYouTubeId, buildYouTubeEmbedUrl } from '@/lib/youtubeUtils';
+import { extractYouTubeId } from '@/lib/youtubeUtils';
+import { headers } from 'next/headers';
 
 // Real-Time Dynamic Rendering: Always fresh, reflective of all platform updates
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 export default async function AboutKrytyPage() {
+  // Forcefully opt out of Netlify Durable CDN cache at the response level
+  headers(); // Calling headers() forces force-dynamic, prevents any static prerender
+
   const setting = await prisma.platformSetting.findUnique({
     where: { key: 'aboutPlatformVideoUrl' },
   });

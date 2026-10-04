@@ -1,3 +1,31 @@
 [build]
 command = "npx prisma generate && npm run build"
 publish = ".next"
+
+# Force Netlify CDN to never durably cache the /about page (it embeds a DB-driven YouTube video)
+[[headers]]
+  for = "/about"
+  [headers.values]
+    Cache-Control = "no-store, no-cache, max-age=0, must-revalidate"
+    CDN-Cache-Control = "no-store"
+    Netlify-CDN-Cache-Control = "no-store"
+    Vary = "Cookie"
+
+# Also disable durable caching for all dynamic dashboard/admin/api routes
+[[headers]]
+  for = "/dashboard/*"
+  [headers.values]
+    Cache-Control = "private, no-store, no-cache, max-age=0"
+    CDN-Cache-Control = "no-store"
+
+[[headers]]
+  for = "/admin"
+  [headers.values]
+    Cache-Control = "private, no-store, no-cache, max-age=0"
+    CDN-Cache-Control = "no-store"
+
+[[headers]]
+  for = "/admin/*"
+  [headers.values]
+    Cache-Control = "private, no-store, no-cache, max-age=0"
+    CDN-Cache-Control = "no-store"
