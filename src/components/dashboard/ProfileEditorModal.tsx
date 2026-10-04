@@ -223,7 +223,7 @@ export const ProfileEditorModal: React.FC<ProfileEditorModalProps> = ({
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="تعديل وتحديث الملف الشخصي">
-      <div className="space-y-4 text-stone-100 max-h-[80vh] overflow-y-auto p-1">
+      <div className="space-y-4 text-stone-100 p-1">
         {/* Navigation Tabs */}
         <div className="flex items-center gap-1.5 border-b border-slate-800 pb-2">
           <button

@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/Button';
 import { SUBJECTS, EDUCATION_LEVELS } from '@/lib/taxonomy';
 import { Newspaper, Image as ImageIcon, Video, Upload, Send, X, CheckCircle, Sparkles } from 'lucide-react';
 import { useToast } from '@/context/ToastContext';
+import { getClientAuth } from '@/lib/clientAuth';
 
 export interface CreatePostModalProps {
   isOpen: boolean;
@@ -36,8 +37,7 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
 
   useEffect(() => {
     if (!currentUser) {
-      fetch('/api/auth/me')
-        .then((res) => res.json())
+      getClientAuth()
         .then((data) => {
           if (data.authenticated) setCurrentUser(data.user);
         })
@@ -153,8 +153,7 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="نشر منشور أو إرشاد تعليمي جديد (Create Educational Post)">
-      <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0" dir="rtl">
-        <div className="overflow-y-auto flex-1 min-h-0 px-1 space-y-4 text-stone-100 pb-2">
+      <form onSubmit={handleSubmit} className="space-y-4 text-stone-100" dir="rtl">
         {error && (
           <div className="p-3 bg-rose-950/80 border border-rose-800 text-rose-300 text-xs rounded-xl font-bold">
             {error}
@@ -316,9 +315,8 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
             </div>
           )}
         </div>
-        </div>
 
-        <div className="shrink-0 flex justify-end gap-2 pt-3 mt-2 border-t border-slate-800/80 bg-slate-950/95 sticky bottom-0 z-10 py-1">
+        <div className="sticky bottom-0 bg-[#111D38]/95 backdrop-blur-md px-4 py-3 border-t border-slate-800 flex justify-end gap-2 -mx-4 -mb-4 mt-4 z-10 shadow-lg">
           <Button variant="outline" size="sm" type="button" onClick={onClose} className="border-slate-700 text-stone-300">
             إلغاء
           </Button>

@@ -3,6 +3,8 @@ import { getCurrentUser, sanitizeUserForClient } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { rateLimit } from '@/middleware/rateLimitMiddleware';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request) {
   const limitRes = await rateLimit(request, 60, 60_000); // lenient for polling
   if (limitRes) return limitRes;

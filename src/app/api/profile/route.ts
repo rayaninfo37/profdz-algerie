@@ -8,6 +8,8 @@ import { findWilayaCode } from '@/lib/taxonomy';
 import { revalidatePath } from 'next/cache';
 import { invalidateRankingCache } from '@/lib/ranking';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     const user = await getCurrentUser();

@@ -51,7 +51,7 @@ export async function POST(request: Request) {
         where: { id: user.id },
         data: {
           phone: normalized,
-          isPhoneVerified: true,
+          isPhoneVerified: false,
         },
       });
 
@@ -73,6 +73,20 @@ export async function POST(request: Request) {
           target: user.id,
           category: 'SECURITY',
           details: 'Phone number changed and synchronized across user and teacher profile',
+        },
+      });
+
+      // Generate phone verification code for the new number
+      const phoneCode = String(Math.floor(100000 + Math.random() * 900000));
+      const crypto = await import('crypto');
+      const phoneCodeHash = crypto.createHash('sha256').update(phoneCode).digest('hex');
+      const phoneExpires = new Date(Date.now() + 15 * 60 * 1000); // 15 mins
+      await tx.phoneVerificationCode.create({
+        data: {
+          userId: user.id,
+          phone: normalized,
+          code: phoneCodeHash,
+          expiresAt: phoneExpires,
         },
       });
     });

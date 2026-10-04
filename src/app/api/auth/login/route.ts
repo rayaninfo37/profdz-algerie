@@ -63,11 +63,6 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'يرجى تأكيد بريدك الإلكتروني أولاً لتفعيل الحساب.' }, { status: 403 });
     }
 
-    // For teachers, ensure phone verification
-    if (user.role === UserRole.TEACHER && !user.isPhoneVerified) {
-      return NextResponse.json({ error: 'يرجى تأكيد رقم هاتفك أولاً لتفعيل حساب الأستاذ.' }, { status: 403 });
-    }
-
     const isValid = await verifyPassword(password, user.passwordHash);
     if (!isValid) {
       return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 });
