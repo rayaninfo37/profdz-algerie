@@ -238,7 +238,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
               </span>
             </div>
 
-            <Link href={`/products/${product.slug}`} className="hover:underline block">
+            <Link href={`/products/${product.slug}`} prefetch={true} className="hover:underline block">
               <h3 className="text-base font-bold text-white line-clamp-2 leading-snug tracking-tight group-hover:text-cyan-300 transition-colors">
                 {product.title}
               </h3>
@@ -274,7 +274,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
 
         {/* Action CTA */}
         <div className="p-5 pt-0">
-          <Link href={`/products/${product.slug}`} className="w-full block">
+          <Link href={`/products/${product.slug}`} prefetch={true} className="w-full block">
             <Button
               variant="primary"
               size="sm"

@@ -107,7 +107,7 @@ export const Sidebar = () => {
         <div className="p-3 border-b border-white/10 bg-gradient-to-b from-sky-950/40 to-transparent">
           {currentUser ? (
             <div className={`flex items-center ${collapsed ? 'justify-center' : 'gap-3'} transition-all`}>
-              <Link href={profileHref} className="relative shrink-0 group/avatar">
+              <Link href={profileHref} prefetch={true} className="relative shrink-0 group/avatar">
                 <AvatarFallback
                   src={currentUser.avatarUrl}
                   name={currentUser.fullName}
@@ -123,7 +123,7 @@ export const Sidebar = () => {
 
               {!collapsed && (
                 <div className="flex-1 min-w-0 space-y-0.5">
-                  <Link href={profileHref} className="block hover:text-sky-300 transition-colors">
+                  <Link href={profileHref} prefetch={true} className="block hover:text-sky-300 transition-colors">
                     <h4 className="text-xs font-black text-white truncate">
                       {currentUser.fullName}
                     </h4>
@@ -183,6 +183,7 @@ export const Sidebar = () => {
               <Link
                 key={item.href}
                 href={item.href}
+                prefetch={true}
                 title={label(item)}
                 className={`flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold transition-all duration-200 group relative ${
                   active

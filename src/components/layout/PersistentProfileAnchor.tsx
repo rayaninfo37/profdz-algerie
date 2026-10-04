@@ -156,12 +156,14 @@ export const PersistentProfileAnchor = () => {
         <div className="mt-3 pt-2.5 border-t border-white/10 flex items-center justify-between gap-2">
           <Link
             href={profileHref}
+            prefetch={true}
             className="flex-1 py-1.5 px-2 rounded-xl bg-slate-900/60 hover:bg-slate-800 border border-white/10 text-[11px] font-bold text-center text-sky-200 hover:text-white transition-all"
           >
             الملف الشخصي
           </Link>
           <Link
             href={dashboardHref}
+            prefetch={true}
             className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-gradient-to-r from-teal-600 to-sky-600 hover:from-teal-500 hover:to-sky-500 text-white text-[11px] font-bold transition-all shadow-md shadow-sky-500/20"
           >
             <LayoutDashboard className="w-3 h-3" />

@@ -196,7 +196,7 @@ export const TeacherCard: React.FC<TeacherCardProps> = ({
             </div>
 
             <div className="flex-1 min-w-0 space-y-1">
-              <Link href={`/teachers/${generateTeacherSlug(teacher.user.fullName, teacher.id)}`} className="hover:underline">
+              <Link href={`/teachers/${generateTeacherSlug(teacher.user.fullName, teacher.id)}`} prefetch={true} className="hover:underline">
                 <div className="flex items-center gap-1.5 flex-wrap">
                   <h3 className="text-base font-bold text-white tracking-tight truncate group-hover:text-cyan-300 transition-colors">
                     {teacher.user.fullName}
@@ -271,7 +271,7 @@ export const TeacherCard: React.FC<TeacherCardProps> = ({
 
         {/* Action Buttons: Single clear primary CTA is 'عرض الملف'. Secondary 'تواصل' only if contact method exists AND hideContact=false */}
         <div className={`grid ${hasContactMethod && !hideContact ? 'grid-cols-2' : 'grid-cols-1'} gap-2.5 pt-3.5 border-t border-white/5`}>
-          <Link href={`/teachers/${generateTeacherSlug(teacher.user.fullName, teacher.id)}`} className="w-full">
+          <Link href={`/teachers/${generateTeacherSlug(teacher.user.fullName, teacher.id)}`} prefetch={true} className="w-full">
             <Button
               variant="primary"
               size="sm"

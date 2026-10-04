@@ -230,6 +230,7 @@ export const Navbar = () => {
                 <Link
                   key={item.href}
                   href={item.href}
+                  prefetch={true}
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all whitespace-nowrap ${
                     isActive
                       ? 'bg-gradient-to-r from-sky-500 to-teal-500 text-white shadow-md shadow-sky-500/35 border border-sky-300/40'
@@ -301,7 +302,7 @@ export const Navbar = () => {
                 {/* Persistent Live Mini Profile in Header with Dropdown Container */}
                 <div className="relative">
                   <div className="flex items-center gap-2 p-1.5 px-3 rounded-2xl bg-[#092235]/90 border border-sky-400/40 hover:border-sky-300 transition-all shadow-md shadow-sky-500/15 group">
-                    <Link href={profileHref} className="flex items-center gap-2.5">
+                    <Link href={profileHref} prefetch={true} className="flex items-center gap-2.5">
                       <div className="relative shrink-0">
                         <AvatarFallback
                           src={currentUser.avatarUrl}
@@ -358,6 +359,7 @@ export const Navbar = () => {
                       <div className="space-y-1.5 pt-1">
                         <Link
                           href={profileHref}
+                          prefetch={true}
                           onClick={() => setProfileDropdownOpen(false)}
                           className="flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-sky-600/30 to-teal-600/30 border border-sky-400/40 hover:border-sky-300 hover:from-sky-600/50 hover:to-teal-600/50 transition-all shadow-sm group/btn"
                         >
@@ -384,12 +386,12 @@ export const Navbar = () => {
               </div>
             ) : (
               <div className="flex items-center gap-2">
-                <Link href="/login">
+                <Link href="/login" prefetch={true}>
                   <Button variant="outline" size="sm" className="border-sky-400/40 text-sky-200 bg-slate-900/60 hover:bg-slate-800 hover:text-white">
                     {t.common.login}
                   </Button>
                 </Link>
-                <Link href="/register">
+                <Link href="/register" prefetch={true}>
                   <Button variant="primary" size="sm" className="gap-1.5 bg-gradient-to-r from-teal-600 to-sky-600 hover:from-teal-500 hover:to-sky-500 text-white font-bold shadow-lg shadow-sky-500/25 border-0">
                     <UserPlus className="w-4 h-4" /> {t.common.register}
                   </Button>
