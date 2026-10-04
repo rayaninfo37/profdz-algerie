@@ -6,16 +6,7 @@ import AvatarFallback from '@/components/common/AvatarFallback';
 
 export const revalidate = 60;
 
-export default async function PupilsPage({
-  searchParams,
-}: {
-  searchParams?: Promise<{ q?: string; wilaya?: string; level?: string }>;
-}) {
-  const params = (await searchParams) || {};
-  const query = params.q?.toLowerCase() || '';
-  const wilaya = params.wilaya || '';
-  const level = params.level || '';
-
+export default async function PupilsPage() {
   // Query pupils (Primary, Middle, Secondary stages)
   const pupils = await prisma.user.findMany({
     where: {
@@ -25,8 +16,6 @@ export default async function PupilsPage({
       studentProfile: {
         studentType: { in: ['PUPIL_PRIMARY', 'PUPIL_MIDDLE', 'PUPIL_SECONDARY'] },
       },
-      ...(wilaya ? { wilaya: { contains: wilaya } } : {}),
-      ...(query ? { fullName: { contains: query } } : {}),
     },
     select: {
       id: true,

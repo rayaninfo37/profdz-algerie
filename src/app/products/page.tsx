@@ -8,16 +8,8 @@ import { BookOpen } from 'lucide-react';
 // Cache public products catalog for 60 seconds (ISR)
 export const revalidate = 60;
 
-export default async function ProductsCatalogPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ type?: string; subject?: string; level?: string }>;
-}) {
-  const params = await searchParams;
+export default async function ProductsCatalogPage() {
   const where: any = { isPublished: true };
-  if (params.type) where.productType = params.type;
-  if (params.subject) where.subject = params.subject;
-  if (params.level) where.educationLevel = params.level;
 
   const rawProducts = await prisma.product.findMany({
     where,

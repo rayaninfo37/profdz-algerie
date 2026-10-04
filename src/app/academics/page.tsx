@@ -7,22 +7,13 @@ import { VerifiedBadge } from '@/components/ui/VerifiedBadge';
 
 export const revalidate = 60;
 
-export default async function AcademicsPage({
-  searchParams,
-}: {
-  searchParams?: Promise<{ q?: string; wilaya?: string }>;
-}) {
-  const params = (await searchParams) || {};
-  const query = params.q?.toLowerCase() || '';
-  const wilaya = params.wilaya || '';
-
+export default async function AcademicsPage() {
   const academics = await prisma.teacherProfile.findMany({
     where: {
       subscriptionState: { in: ['FREE_ACTIVE', 'PRO_ACTIVE'] },
       user: {
         isFrozen: false,
         softDeletedAt: null,
-        ...(wilaya ? { wilaya: { contains: wilaya } } : {}),
       },
       OR: [
         { headline: { contains: 'جامع' } },

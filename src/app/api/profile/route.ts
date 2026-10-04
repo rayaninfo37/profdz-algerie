@@ -107,11 +107,38 @@ export async function PATCH(request: Request) {
       }
     }
 
+    // Enforce validated avatar & convert base64 to static uploaded file
+    let finalAvatarUrl: string | undefined = undefined;
+    if (avatarUrl !== undefined) {
+      if (typeof avatarUrl === 'string' && avatarUrl.trim().startsWith('data:image/')) {
+        try {
+          const matches = avatarUrl.trim().match(/^data:image\/([a-zA-Z0-9.+-]+);base64,(.+)$/);
+          if (matches) {
+            let ext = matches[1].toLowerCase();
+            if (ext === 'jpeg') ext = 'jpg';
+            const allowedExts = ['jpg', 'png', 'webp'];
+            if (allowedExts.includes(ext)) {
+              const buffer = Buffer.from(matches[2], 'base64');
+              if (buffer.length <= 5 * 1024 * 1024) {
+                const { storageService } = await import('@/lib/storage/StorageService');
+                const uploadRes = await storageService.uploadPublic(buffer, `avatar.${ext}`, 'avatars');
+                finalAvatarUrl = uploadRes.url;
+              }
+            }
+          }
+        } catch (uploadErr) {
+          console.warn('[PROFILE] Failed to convert base64 avatar to file:', uploadErr);
+        }
+      } else {
+        finalAvatarUrl = avatarUrl;
+      }
+    }
+
     const updatedUser = await prisma.user.update({
       where: { id: user.id },
       data: {
         ...(fullName ? { fullName } : {}),
-        ...(avatarUrl !== undefined ? { avatarUrl } : {}),
+        ...(finalAvatarUrl !== undefined ? { avatarUrl: finalAvatarUrl } : {}),
         ...(wilaya !== undefined ? { wilaya } : {}),
         ...(computedWilayaCode !== undefined ? { wilayaCode: computedWilayaCode } : {}),
         ...(normalizedPhone !== undefined ? { phone: normalizedPhone || null } : {}),
